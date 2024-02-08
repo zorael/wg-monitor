@@ -1,0 +1,13 @@
+[Unit]
+Description=Wireguard monitor (%i)
+After=network.target wg-quick@%i.service
+
+[Service]
+Type=simple
+ExecStart=/path/to/wg-monitor --iface=%i --progress=false
+WorkingDirectory=/path/to
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

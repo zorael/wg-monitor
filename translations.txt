@@ -1,0 +1,62 @@
+language=english
+peerSingular=peer
+peerPlural=peers
+phaseDescription=$phaseName (phase $phaseNumber)
+powerBackAndContactLostWith=Power restored. Contact lost with $numPeers $peerNoun:
+justLostContactWith=Lost contact with $numPeers $peerNoun:
+justRegainedContactWith=Regained contact with $numPeers $peerNoun:
+stillMissingContactWith=Still missing contact with $numPeers $peerNoun:
+notSeenSinceRestart=not seen since restart of this unit
+lastSeenPre=last seen
+lastSeenPost=
+backPre=back
+backPost=
+nowHasContactWithAll=All peers in contact.
+
+language=swedish
+peerSingular=nod
+peerPlural=noder
+phaseDescription=$phaseName (fas $phaseNumber)
+powerBackAndContactLostWith=Strömmen tillbaka. Saknar kontakt med $numPeers $peerNoun:
+justLostContactWith=Tappade just kontakt med $numPeers $peerNoun:
+justRegainedContactWith=Återfick just kontakt med $numPeers $peerNoun:
+stillMissingContactWith=Saknar fortfarande kontakt med $numPeers $peerNoun:
+notSeenSinceRestart=ej synts sedan omstart av maskinen
+lastSeenPre=sågs senast
+lastSeenPost=
+backPre=tillbaka
+backPost=
+nowHasContactWithAll=Har därmed kontakt med alla noder.
+
+language=japanese
+peerSingular=
+peerPlural=
+phaseDescription=$phaseName 第$phaseNumber相
+powerBackAndContactLostWith=電源が復旧しました。$numPeers台のピアとの接触が失われました。
+justLostContactWith=$numPeers台のピアとの接触が失われました。
+justRegainedContactWith=$numPeers台のピアとの接触が回復しました。
+stillMissingContactWith=まだ$numPeers台のピアとの接触がありません。
+notSeenSinceRestart=再起動以来、連絡がありません
+lastSeenPre=
+lastSeenPost=でロスト
+backPre=
+backPost=に確認
+nowHasContactWithAll=すべてのピアと接触しています。
+
+language=english-minimal
+peerSingular=
+peerPlural=
+phaseDescription=$phaseName ($phaseNumber)
+powerBackAndContactLostWith=Rebooted. Lost:
+justLostContactWith=Lost:
+justRegainedContactWith=Returned:
+stillMissingContactWith=Still lost:
+notSeenSinceRestart=never seen
+lastSeenPre=lost
+lastSeenPost=
+backPre=back
+backPost=
+nowHasContactWithAll=All OK.
+
+language=debug
+# should be left empty
