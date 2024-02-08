@@ -22,3 +22,19 @@ docs/
 
 # Code coverage
 *.lst
+
+# extras
+/wg-monitor
+wg-monitor.so
+wg-monitor.dylib
+wg-monitor.dll
+wg-monitor.a
+wg-monitor.lib
+wg-monitor-test-*
+wgm
+*.pdb
+*.ls
+
+# tracy
+/trace.tracy
+/trace.json
