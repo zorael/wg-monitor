@@ -960,11 +960,7 @@ auto report(
     const Context context,
     const SortedPeers sortedPeers)
 {
-    import lu.string : plurality;
-    import std.algorithm.iteration : joiner, map;
-    import std.array : Appender, join, replace;
-    import std.conv : to;
-    import std.format : format;
+    import std.array : Appender, join;
 
     Appender!(string[]) sink;
     sink.reserve(32);  // number of peers + upward of 7 extra lines
@@ -973,6 +969,10 @@ auto report(
         const string translationLine,
         const size_t numPeers)
     {
+        import lu.string : plurality;
+        import std.array : replace;
+        import std.conv : to;
+
         const peerNoun = numPeers.plurality(
             context.translation.peerSingular,
             context.translation.peerPlural);
@@ -991,6 +991,8 @@ auto report(
         const string wordingPreTimestamp,
         const string wordingPostTimestamp)
     {
+        import std.format : format;
+
         foreach (const peer; peers)
         {
             if (peer.timestamp.toUnixTime == 0)
@@ -1019,6 +1021,7 @@ auto report(
 
     auto getShortPeerRange(const Peer[] peers)
     {
+        import std.algorithm.iteration : joiner, map;
         return peers
             .map!(peer => peer.hash[0..shortHashLength])
             .joiner(", ");
@@ -1164,7 +1167,6 @@ auto report(
  +/
 auto handleGetopt(string[] args, out Context context)
 {
-    import std.format : format;
     import core.time : seconds;
     static import std.getopt;
 
@@ -1557,9 +1559,7 @@ public:
  +/
 auto run(string[] args)
 {
-    import std.file : exists;
     import std.getopt : GetOptException;
-    import std.stdio : File;
 
     Context context;
 
@@ -1646,6 +1646,9 @@ auto run(string[] args)
 
     try
     {
+        import std.file : exists;
+        import std.stdio : File;
+
         const peerFileExists = context.peerFile.exists;
         bool commandExists;
         bool batsignFileExists;
