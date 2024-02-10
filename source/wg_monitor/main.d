@@ -1755,6 +1755,9 @@ auto run(string[] args)
 
         if (!context.skipIntro)
         {
+            enum ifacePattern = "interface:           %s";
+            writefln(ifacePattern, context.iface);
+
             enum peerPattern = "peer file exists:    %s (%d)";
             writefln(peerPattern, peerFileExists, context.peerList.length);
 
