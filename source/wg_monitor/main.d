@@ -1214,9 +1214,6 @@ auto handleGetopt(string[] args, out Context context)
         "i|interface",
             "Wireguard interface name",
             &context.iface,
-        "iface",
-            string.init,
-            &context.iface,
         "p|peers",
             "Peer list file",
             &context.peerFile,
@@ -1621,8 +1618,7 @@ auto run(string[] args)
                     return
                         (it.optShort == "-h") ||
                         (it.optLong == "--skip-intro") ||
-                        (it.optLong == "--cacert") ||
-                        (it.optLong == "--iface");
+                        (it.optLong == "--cacert");
                 }
 
                 foreach (it; opt)
