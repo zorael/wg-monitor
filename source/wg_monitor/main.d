@@ -1175,8 +1175,11 @@ auto handleGetopt(string[] args, out Context context)
     auto result = std.getopt.getopt(args,
         std.getopt.config.caseSensitive,
         std.getopt.config.required,
-        "i|iface",
+        "i|interface",
             "Wireguard interface name",
+            &context.iface,
+        "iface",
+            string.init,
             &context.iface,
         "p|peers",
             "Peer list file",
@@ -1584,7 +1587,8 @@ auto run(string[] args)
                     return
                         (it.optShort == "-h") ||
                         (it.optLong == "--skip-intro") ||
-                        (it.optLong == "--cacert");
+                        (it.optLong == "--cacert") ||
+                        (it.optLong == "--iface");
                 }
 
                 foreach (it; opt)
