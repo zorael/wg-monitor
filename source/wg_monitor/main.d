@@ -705,7 +705,41 @@ void getHandshakes(ref Peer[string] peers, const string iface)
 {
     import std.algorithm.iteration : splitter;
 
-    const rawHandshakes = getRawHandshakeString(iface);
+    string rawHandshakes;  // mutable
+
+    try
+    {
+        rawHandshakes = getRawHandshakeString(iface);
+    }
+    catch (NoSuchInterfaceException e)
+    {
+        writeln("[!] ", e.msg);
+        writeln("[+] waiting for interface to return");
+        stdout.flush();
+
+        waitLoop:
+        while (true)
+        {
+            try
+            {
+                // Keep trying
+                rawHandshakes = getRawHandshakeString(iface);
+
+                // If we're here, it didn't throw
+                writeln("[+] interface found");
+                break waitLoop;
+            }
+            catch (NoSuchInterfaceException _)
+            {
+                import core.thread : Thread;
+                import core.time : seconds;
+
+                static immutable wait = 10.seconds;
+                Thread.sleep(wait);
+            }
+        }
+    }
+
     auto handshakes = rawHandshakes.splitter('\n');
 
     foreach (const line; handshakes)
