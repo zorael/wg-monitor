@@ -350,6 +350,12 @@ public:
         Whether or not to perform a dry run.
      +/
     bool dryRun;
+
+    /++
+        Whether to wait for a Wireguard interface to show up, or to abotr and
+        exit if it doesn't exist during start-up.
+     +/
+    bool waitForInterface = false;
 }
 
 
@@ -608,13 +614,23 @@ auto getRawHandshakeString(const string iface)
 
     const result = execute(wgCommand[]);
     const output = result.output.chomp;
-    enum sudoError = "Unable to access interface: Operation not permitted";
 
     if (result.status != 0)
     {
-        throw (output == sudoError) ?
-            new NeedSudoException(output) :
-            new Exception(output);
+        enum sudoError = "Unable to access interface: Operation not permitted";
+        enum ifaceError = "Unable to access interface: No such device";
+
+        switch (output)
+        {
+        case sudoError:
+            throw new NeedSudoException(output);
+
+        case ifaceError:
+            throw new NoSuchInterfaceException(output, iface);
+
+        default:
+            throw new Exception(output);
+        }
     }
 
     return output;
@@ -801,9 +817,42 @@ void mainLoop(const Context context)
     import std.datetime.systime : SysTime;
     import std.format : format;
 
-    // Try it out once to see if it works. We may be missing permissions.
-    // It throws if it fails.
-    getRawHandshakeString(context.iface);
+    try
+    {
+        // Try it out once to see if it works. We may be missing permissions.
+        // It throws if it fails.
+        getRawHandshakeString(context.iface);
+    }
+    catch (NoSuchInterfaceException e)
+    {
+        if (!context.waitForInterface) throw e;
+
+        writeln("[!] ", e.msg);
+        writeln("[+] waiting for interface to show up");
+        stdout.flush();
+
+        waitLoop:
+        while (true)
+        {
+            try
+            {
+                // Keep trying
+                getRawHandshakeString(context.iface);
+
+                // If we're here, it didn't throw
+                writeln("[+] interface found");
+                break waitLoop;
+            }
+            catch (NoSuchInterfaceException _)
+            {
+                import core.thread : Thread;
+                import core.time : seconds;
+
+                static immutable wait = 10.seconds;
+                Thread.sleep(wait);
+            }
+        }
+    }
 
     if (context.dryRun)
     {
@@ -1150,6 +1199,9 @@ auto handleGetopt(string[] args, out Context context)
         "r|report",
             "How long to wait before repeating a notification",
             &reportPeriodicity,
+        "wait-for-interface",
+            "Wait for the Wireguard interface to show up",
+            &context.waitForInterface,
         "P|progress",
             "Print progress messages",
             &context.progress,
