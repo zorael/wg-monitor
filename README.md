@@ -10,6 +10,8 @@ Peers should have a `PersistentKeepalive` setting in their Wireguard configurati
 
 Notifications are send as short emails via [Batsign](https://batsign.me), or by invocation of a specified command.
 
+**This program is Posix-only until such time a console `wg` tool exists for Windows.**
+
 ## tl;dr
 
 ```
@@ -37,11 +39,11 @@ $ sudo wg show [interface] peers
 
 ### Batsign
 
-The `batsign.url` file should contain one or more [Batsign](https://batsign.me) URLs. Batsign is a free service with which you can send brief emails to yourself by issuing a simple HTTP request. See [the homepage](https://batsign.me) for more information on how to sign-up.
+The `batsign.url` file should contain one or more [Batsign](https://batsign.me) URLs. Batsign is a free service with which you can send brief emails to yourself by issuing a simple HTTP request. See [the homepage](https://batsign.me) for more information on how to sign up.
 
 ### Notification commands
 
-A custom command can be specified to be run instead of sending a Batsign when a peer is lost. Note however that the command will be from within the `wg-monitor` process, and as such by the same user it was started as. This will in all likelihood be `root`, since the program calls itself with `sudo` if it is missing permissions to access the Wireguard interface. This imposes some limitations on what the command can do.
+A custom command can be specified to be run instead of sending a Batsign when a peer is lost. Note however that the command will be run from within the `wg-monitor` process, and as such by the same user it was started as. This will in all likelihood be `root`, since the program calls itself with `sudo` if it is missing permissions to access the Wireguard interface. This imposes some limitations on what the command can do.
 
 Batsign URLs are not necessary if a custom command is used for notifications.
 
