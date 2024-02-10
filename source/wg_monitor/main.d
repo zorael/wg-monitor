@@ -641,6 +641,33 @@ final class NeedSudoException : Exception
 }
 
 
+// NoSuchInterfaceException
+/++
+    Exception thrown when a `wg` command fails due to a non-existent interface supplied.
+ +/
+final class NoSuchInterfaceException : Exception
+{
+    /++
+        Interface name.
+     +/
+    string iface;
+
+    /++
+        Constructor.
+     +/
+    this(
+        const string message,
+        const string iface,
+        const string file = __FILE__,
+        const size_t line = __LINE__,
+        Throwable nextInChain = null) pure nothrow @nogc @safe
+    {
+        this.iface = iface;
+        super(message, file, line, nextInChain);
+    }
+}
+
+
 // getHandshakes
 /++
     Executes a Wireguard `latest-handshakes` command and parses the output.
