@@ -580,6 +580,11 @@ enum ShellReturnValue
         Notification command not found.
      +/
     commandNotFound = 6,
+
+    /++
+        Network error.
+     +/
+    networkError = 7,
 }
 
 
@@ -619,6 +624,7 @@ auto getRawHandshakeString(const string iface)
     {
         enum sudoError = "Unable to access interface: Operation not permitted";
         enum ifaceError = "Unable to access interface: No such device";
+        enum afError = "Unable to access interface: Address family not supported by protocol";
 
         switch (output)
         {
@@ -627,6 +633,9 @@ auto getRawHandshakeString(const string iface)
 
         case ifaceError:
             throw new NoSuchInterfaceException(output, iface);
+
+        case afError:
+            throw new NetworkException(output);
 
         default:
             throw new Exception(output);
@@ -679,6 +688,26 @@ final class NoSuchInterfaceException : Exception
         Throwable nextInChain = null) pure nothrow @nogc @safe
     {
         this.iface = iface;
+        super(message, file, line, nextInChain);
+    }
+}
+
+
+// NetworkException
+/++
+    Exception thrown when a `wg` command fails due to other network errors.
+ +/
+final class NetworkException : Exception
+{
+    /++
+        Constructor.
+     +/
+    this(
+        const string message,
+        const string file = __FILE__,
+        const size_t line = __LINE__,
+        Throwable nextInChain = null) pure nothrow @nogc @safe
+    {
         super(message, file, line, nextInChain);
     }
 }
@@ -1798,6 +1827,12 @@ auto run(string[] args)
 
         execvp(reexecCommand[0], reexecCommand);
         assert(0, "reexec failed");  // It either execs successfully or throws
+    }
+    catch (NetworkException e)
+    {
+        writeln("[!] ", e.msg);
+        stdout.flush();
+        return ShellReturnValue.networkError;
     }
     catch (Exception e)
     {
