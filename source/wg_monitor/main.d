@@ -1661,7 +1661,7 @@ auto run(string[] args)
     catch (GetOptException e)
     {
         printProgramVersion();
-        writeln();
+        writeln(' ');
         writeln("[!] ", e.msg);
         writeln("[+] see --help for more information");
         stdout.flush();
@@ -1671,7 +1671,7 @@ auto run(string[] args)
     if (!context.skipIntro)
     {
         printProgramVersion();
-        writeln();
+        writeln(' ');
     }
 
     try
@@ -1775,7 +1775,7 @@ auto run(string[] args)
             }
 
             writeln("language set to:     ", context.language);
-            writeln();
+            writeln(' ');
             stdout.flush();
         }
 
