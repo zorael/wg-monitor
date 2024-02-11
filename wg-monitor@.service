@@ -7,7 +7,7 @@ Type=simple
 ExecStart=/path/to/wg-monitor --interface=%i --progress=false --wait-for-interface
 WorkingDirectory=/path/to
 Restart=always
-RestartPreventExitStatus=2 4 5
+RestartPreventExitStatus=2 4 5 7 31
 RestartSec=10
 
 [Install]
