@@ -497,30 +497,28 @@ struct SortedPeers
         import std.algorithm.sorting : sort;
         import std.functional : lessThan;
 
-        SortedPeers sp;
-
         foreach (peer; peers)
         {
             final switch (peer.state)
             {
             case Peer.State.present:
-                sp.present ~= peer;
+                this.present ~= peer;
                 break;
 
             case Peer.State.justReturned:
-                sp.justReturned ~= peer;
+                this.justReturned ~= peer;
                 break;
 
             case Peer.State.stillLost:
-                sp.stillLost ~= peer;
+                this.stillLost ~= peer;
                 break;
 
             case Peer.State.justLost:
-                sp.justLost ~= peer;
+                this.justLost ~= peer;
                 break;
 
             case Peer.State.lostOnStartup:
-                sp.lostOnStartup ~= peer;
+                this.lostOnStartup ~= peer;
                 break;
 
             case Peer.State.unset:
@@ -531,11 +529,11 @@ struct SortedPeers
 
         alias pred = (Peer a, Peer b) => a.hash.lessThan(b.hash);
 
-        if (sp.present.length) sp.present = sp.present.sort!pred.release();
-        if (sp.justReturned.length) sp.justReturned = sp.justReturned.sort!pred.release();
-        if (sp.stillLost.length) sp.stillLost = sp.stillLost.sort!pred.release();
-        if (sp.justLost.length) sp.justLost = sp.justLost.sort!pred.release();
-        if (sp.lostOnStartup.length) sp.lostOnStartup = sp.lostOnStartup.sort!pred.release();
+        if (this.present.length) this.present = this.present.sort!pred.release();
+        if (this.justReturned.length) this.justReturned = this.justReturned.sort!pred.release();
+        if (this.stillLost.length) this.stillLost = this.stillLost.sort!pred.release();
+        if (this.justLost.length) this.justLost = this.justLost.sort!pred.release();
+        if (this.lostOnStartup.length) this.lostOnStartup = this.lostOnStartup.sort!pred.release();
     }
 }
 
