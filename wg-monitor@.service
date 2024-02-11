@@ -11,4 +11,4 @@ RestartPreventExitStatus=2 4 5 7 31
 RestartSec=10
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=network.target
