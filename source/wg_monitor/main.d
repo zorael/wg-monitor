@@ -613,10 +613,10 @@ enum ShellReturnValue
         The `chomp`ed output of the Wireguard command.
 
     Throws:
-        [object.NeedSudoException|NeedSudoException] if `sudo` permissions are
-        needed to execute the command.
-
-        [object.Exception|Exception] on other errors.
+        [NeedSudoException] if `sudo` permissions are needed to execute the command.
+        [NoSuchInterfaceException] if the specified interface doesn't exist.
+        [NetworkException] on other network errors.
+        [object.Exception|Exception] on other more generic errors.
  */
 auto getRawHandshakeString(const string iface)
 {
@@ -739,10 +739,10 @@ final class NetworkException : Exception
         iface = The string name of the Wireguard interface.
 
     Throws:
-        [object.NeedSudoException|NeedSudoException] if `sudo` permissions are
-        needed to execute the command (via [getRawHandshakeString]).
-
-        [object.Exception|Exception] on other errors (via [getRawHandshakeString]).
+        [NeedSudoException] if `sudo` permissions are needed to execute the command.
+        [NoSuchInterfaceException] if the specified interface doesn't exist.
+        [NetworkException] on other network errors.
+        [object.Exception|Exception] on other more generic errors.
  */
 void getHandshakes(ref Peer[string] peers, const string iface)
 {
