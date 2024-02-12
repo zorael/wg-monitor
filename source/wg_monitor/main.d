@@ -344,12 +344,12 @@ public:
     /**
         Whether or not to skip the intro message.
      */
-    bool skipIntro;
+    bool skipIntro = false;
 
     /**
         Whether or not to perform a dry run.
      */
-    bool dryRun;
+    bool dryRun = false;
 
     /**
         Whether to wait for a Wireguard interface to show up, or to abotr and
@@ -565,7 +565,7 @@ enum ShellReturnValue
     getoptFailure = 2,
 
     /**
-        An exception was thrown.
+        A generic exception was thrown.
      */
     exception = 3,
 
@@ -1845,7 +1845,7 @@ auto run(string[] args)
         ]  ~ args[1..$];
 
         execvp(reexecCommand[0], reexecCommand);
-        assert(0, "reexec failed");  // It either execs successfully or throws
+        assert(0, "exec failed");  // It either execs successfully or throws
     }
     catch (NetworkException e)
     {
