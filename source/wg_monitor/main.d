@@ -614,12 +614,12 @@ enum ShellReturnValue
  */
 auto getRawHandshakeString(const string iface)
 {
-    import std.process : execute;
+    import std.process : environment, execute;
     import std.string : chomp;
 
     const string[4] wgCommand =
     [
-        "/usr/bin/wg",
+        environment.get("WG", "/usr/bin/wg"),
         "show",
         iface,
         "latest-handshakes",
