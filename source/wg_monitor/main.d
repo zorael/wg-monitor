@@ -1646,44 +1646,44 @@ auto run(string[] args)
 
         if (getoptResults.helpWanted)
         {
-            import std.format : format;
             import std.getopt : Option;
 
             static void customGetoptPrinter(
-                const Option[] opt,
+                const Option[] options,
                 const string pattern = "%*s  %*s  %s")
             {
                 import std.algorithm.comparison : max;
 
-                size_t ls;
-                size_t ll;
+                size_t distanceShort;
+                size_t distanceLong;
 
-                auto shouldSkipFlag(const Option it)
+                static auto shouldSkipFlag(const Option opt)
                 {
                     return
-                        (it.optShort == "-h") ||
-                        (it.optLong == "--skip-intro") ||
-                        (it.optLong == "--cacert") ||
-                        (it.optLong == "--reexec");
+                        (opt.optShort == "-h") ||
+                        (opt.optLong == "--skip-intro") ||
+                        (opt.optLong == "--cacert") ||
+                        (opt.optLong == "--reexec");
                 }
 
-                foreach (it; opt)
+                foreach (opt; options)
                 {
-                    if (shouldSkipFlag(it)) continue;
-                    ls = max(ls, it.optShort.length);
-                    ll = max(ll, it.optLong.length);
+                    if (shouldSkipFlag(opt)) continue;
+                    distanceShort = max(distanceShort, opt.optShort.length);
+                    distanceLong = max(distanceLong, opt.optLong.length);
                 }
 
-                foreach (const it; opt)
+                foreach (const opt; options)
                 {
-                    if (shouldSkipFlag(it)) continue;
+                    if (shouldSkipFlag(opt)) continue;
+
                     writefln(
                         pattern,
-                        ls,
-                        it.optShort,
-                        ll,
-                        it.optLong,
-                        it.help);
+                        distanceShort,
+                        opt.optShort,
+                        distanceLong,
+                        opt.optLong,
+                        opt.help);
                 }
             }
 
