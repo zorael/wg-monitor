@@ -12,14 +12,12 @@ RestartSec=10
 
 # Hardening
 ProtectSystem=strict
-ProtectHome=true
 ProtectControlGroups=yes
 ProtectKernelModules=yes
 ProtectKernelTunables=yes
 ProtectHostname=yes
 ProtectClock=yes
 ProtectKernelLogs=yes
-ProtectProc=yes
 RestrictNamespaces=yes
 RestrictRealtime=yes
 RestrictSUIDSGID=yes
