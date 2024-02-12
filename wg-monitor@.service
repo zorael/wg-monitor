@@ -6,7 +6,7 @@ After=network.target wg-quick@%i.service
 Type=simple
 ExecStart=/path/to/wg-monitor --interface=%i --progress=false --wait-for-interface
 WorkingDirectory=/path/to
-Restart=always
+Restart=on-failure
 RestartPreventExitStatus=2 4 5 7 8 31
 RestartSec=10
 
