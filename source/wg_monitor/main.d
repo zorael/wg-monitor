@@ -356,6 +356,11 @@ public:
         exit if it doesn't exist during start-up.
      */
     bool waitForInterface = false;
+
+    /**
+        Whether or not the program was re-executed with `exec`.
+     */
+    bool reexecuted = false;
 }
 
 
@@ -583,6 +588,11 @@ enum ShellReturnValue
         Network error.
      */
     networkError = 7,
+
+    /**
+        Some other error occurred with regards to permissions.
+     */
+    otherPermissionsError = 8,
 }
 
 
@@ -1274,6 +1284,9 @@ auto handleGetopt(string[] args, out Context context)
         "skip-intro",
             string.init, //"Skip the intro message (used internally)",
             &context.skipIntro,
+        "reexec",
+            string.init,
+            &context.reexecuted,
         "dry-run",
             "Don't send notifications",
             &context.dryRun);
@@ -1645,7 +1658,8 @@ auto run(string[] args)
                     return
                         (it.optShort == "-h") ||
                         (it.optLong == "--skip-intro") ||
-                        (it.optLong == "--cacert");
+                        (it.optLong == "--cacert") ||
+                        (it.optLong == "--reexec");
                 }
 
                 foreach (it; opt)
@@ -1812,6 +1826,12 @@ auto run(string[] args)
     {
         import std.process : execvp;
 
+        if (context.reexecuted)
+        {
+            writeln("[!] still fails; exiting");
+            return ShellReturnValue.otherPermissionsError;
+        }
+
         writeln("[!] ", e.msg);
         writeln("[+] re-executing with sudo.");
         stdout.flush();
@@ -1821,6 +1841,7 @@ auto run(string[] args)
             "/usr/bin/sudo",
             args[0],
             "--skip-intro",
+            "--reexec",
         ]  ~ args[1..$];
 
         execvp(reexecCommand[0], reexecCommand);
