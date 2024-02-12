@@ -1645,13 +1645,12 @@ auto run(string[] args)
 
             static void customGetoptPrinter(
                 const Option[] opt,
-                const string style = "%*s   %*s%*s%s")
+                const string pattern = "%*s  %*s  %s")
             {
                 import std.algorithm.comparison : max;
 
                 size_t ls;
                 size_t ll;
-                bool hasRequired;
 
                 auto shouldSkipFlag(const Option it)
                 {
@@ -1667,23 +1666,17 @@ auto run(string[] args)
                     if (shouldSkipFlag(it)) continue;
                     ls = max(ls, it.optShort.length);
                     ll = max(ll, it.optLong.length);
-                    hasRequired |= it.required;
                 }
-
-                enum requiredText = "  (Required)  ";
 
                 foreach (const it; opt)
                 {
                     if (shouldSkipFlag(it)) continue;
-
                     writefln(
-                        style,
+                        pattern,
                         ls,
                         it.optShort,
                         ll,
                         it.optLong,
-                        hasRequired ? requiredText.length : 1,
-                        it.required ? requiredText : " ",
                         it.help);
                 }
             }
