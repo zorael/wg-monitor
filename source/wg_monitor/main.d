@@ -22,6 +22,12 @@ private:
 
 import std.stdio : stdout, writefln, writeln;
 
+version(Windows)
+{
+    enum message = "This program is Posix-only until such time a console `wg` tool exists for Windows.";
+    static assert(0, message);
+}
+
 
 // shortHashLength
 /**
