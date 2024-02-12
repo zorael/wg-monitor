@@ -213,7 +213,7 @@ struct Translation
                 }
             }
 
-            translations ~= translation;
+            if (translation.language.length) translations ~= translation;
         }
 
         return translations;
