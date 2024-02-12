@@ -1,4 +1,4 @@
-/++
+/**
     Wireguard peer monitor.
 
     Calls a Wireguard command to get the latest handshake timestamps of all peers.
@@ -15,7 +15,7 @@
 
     Authors:
         [JR](https://github.com/zorael)
- +/
+ */
 module wg_monitor.main;
 
 private:
@@ -24,7 +24,7 @@ import std.stdio : stdout, writefln, writeln;
 
 
 // shortHashLength
-/++
+/**
     How many letters to use in the shorter representation form of a hash.
 
     Example:
@@ -33,99 +33,99 @@ import std.stdio : stdout, writefln, writeln;
     enum shortHash = hash[0..shortHashLength];
     // hash is now "44aN+J6"
     ---
- +/
+ */
 enum shortHashLength = 7;
 
 
 // Translation
-/++
+/**
     Translation strings for a language.
 
     String members should have a default value that refers to itself, to make
     it easier to spot missing translations.
- +/
+ */
 struct Translation
 {
-    /++
+    /**
         Language name.
-     +/
+     */
     string language;
 
-    /++
+    /**
         Translation for "peer", in singular form.
-     +/
+     */
     string peerSingular = "peerSingular";
 
-    /++
+    /**
         Translation for "peer", in plural form.
-     +/
+     */
     string peerPlural = "peerPlural";
 
-    /++
+    /**
         Translation for the string used to describe a phase.
-     +/
+     */
     string phaseDescription = "phaseDescription";
 
-    /++
+    /**
         Translation for the string used when power has been restored but there
         were peers lost.
-     +/
+     */
     string powerBackAndContactLostWith = "powerBackAndContactLostWith";
 
-    /++
+    /**
         Translation for the string used when contact was just lost with a number
         of peers.
-     +/
+     */
     string justLostContactWith = "justLostContactWith";
 
-    /++
+    /**
         Translation for the string used when contact was just regained with a
         number of peers.
-     +/
+     */
     string justRegainedContactWith = "justRegainedContactWith";
 
-    /++
+    /**
         Translation for the string used when contact is still missing with a
         number of peers.
-     +/
+     */
     string stillMissingContactWith = "stillMissingContactWith";
 
-    /++
+    /**
         Translation for the string used when a peer hasn't been seen since the
         program was started.
-     +/
+     */
     string notSeenSinceRestart = "notSeenSinceRestart";
 
-    /++
+    /**
         Translation for the string used along with a timestamp when a peer was
         last seen. Inserted before the timestamp.
-     +/
+     */
     string lastSeenPre = "lastSeenPre";
 
-    /++
+    /**
         Translation for the string used along with a timestamp when a peer was
         last seen. Inserted after the timestamp.
-     +/
+     */
     string lastSeenPost = "lastSeenPost";
 
-    /++
+    /**
         Translation for the string used along with a timestamp when a peer has
         returned. Inserted before the timestamp.
-     +/
+     */
     string backPre = "backPre";
 
-    /++
+    /**
         Translation for the string used along with a timestamp when a peer has
         returned. Inserted after the timestamp.
-     +/
+     */
     string backPost = "backPost";
 
-    /++
+    /**
         Translation for the string used when all peers are present.
-     +/
+     */
     string nowHasContactWithAll = "nowHasContactWithAll";
 
-    /++
+    /**
         Inherits lines from the translations statically imported (and parsed)
         from the `translations.txt` file.
 
@@ -139,7 +139,7 @@ struct Translation
             [allTranslations]
 
             `translations.txt` in the project root.
-     +/
+     */
     auto inherit(const string language)
     {
         foreach (const translation; this.allTranslations)
@@ -153,14 +153,14 @@ struct Translation
         return false;
     }
 
-    /++
+    /**
         Translations statically imported from the `translations.txt` file.
 
         See_Also:
             [Translation]
 
             `translations.txt` in the project root.
-     +/
+     */
     static immutable allTranslations = ()
     {
         import std.algorithm.iteration : splitter;
@@ -219,7 +219,7 @@ struct Translation
         return translations;
     }();
 
-    /++
+    /**
         Returns an array of all language names found in `translations.txt`.
 
         Returns:
@@ -227,7 +227,7 @@ struct Translation
 
         See_Also:
             `translations.txt` in the project root.
-     +/
+     */
     static auto allLanguageNames()
     {
         string[] languageNames;
@@ -244,78 +244,78 @@ struct Translation
 
 
 // Context
-/++
+/**
     Context struct.
- +/
+ */
 struct Context
 {
 private:
     import core.time : Duration, hours, minutes, seconds;
 
 public:
-    /++
+    /**
         Aggregate of durations used in the program.
 
         These are just defaults and may be overridden with getopt flags.
-     +/
+     */
     static struct Durations
     {
-        /++
+        /**
             A peer is considered lost after this amount of time has passed
             since last Wireguard handshake.
-        +/
+        */
         Duration peerTimeout = 10.minutes;
 
-        /++
+        /**
             How long to sleep between Wireguard handshake checks.
-        +/
+        */
         Duration sleepBetweenChecks = 1.minutes;
 
-        /++
+        /**
             How long to wait before repeating a notification.
-        +/
+        */
         Duration reportPeriodicity = 6.hours;
     }
 
-    /++
+    /**
         Wireguard interface.
-     +/
+     */
     string iface;
 
-    /++
+    /**
         File of Batsign URLs.
 
         See_Also:
             https://batsign.me
-     +/
+     */
     string batsignFile = "batsign.url";
 
-    /++
+    /**
         Batsign URLs parsed from [batsignFile].
-     +/
+     */
     string[] batsignURLs;
 
-    /++
+    /**
         File of Wireguard peer hashes.
-     +/
+     */
     string peerFile = "peers.list";
 
-    /++
+    /**
         Custom command to run to send notifications, instead of using Batsign.
-     +/
+     */
     string command;
 
-    /++
+    /**
         Certificate authority bundle filename.
-     +/
+     */
     string caBundleFile;
 
-    /++
+    /**
         Durations used in the program.
-     +/
+     */
     Durations durations;
 
-    /++
+    /**
         Language to use for notifications. Must be one of the languages in
         [allTranslations], and thus one of the languages in `translations.txt`.
 
@@ -323,114 +323,114 @@ public:
             [allTranslations]
 
             `translations.txt` in the project root.
-     +/
+     */
     string language = "english";
 
-    /++
+    /**
         Translation struct for the current language.
-     +/
+     */
     Translation translation;
 
-    /++
+    /**
         Associative array of peer hashes.
-     +/
+     */
     bool[string] peerList;
 
-    /++
+    /**
         Whether or not to print progress messages.
-     +/
+     */
     bool progress = true;
 
-    /++
+    /**
         Whether or not to skip the intro message.
-     +/
+     */
     bool skipIntro;
 
-    /++
+    /**
         Whether or not to perform a dry run.
-     +/
+     */
     bool dryRun;
 
-    /++
+    /**
         Whether to wait for a Wireguard interface to show up, or to abotr and
         exit if it doesn't exist during start-up.
-     +/
+     */
     bool waitForInterface = false;
 }
 
 
 // Peer
-/++
+/**
     Embodies the notion of a Wireguard peer.
- +/
+ */
 struct Peer
 {
 private:
     import std.datetime.systime : SysTime;
 
 public:
-    /++
+    /**
         Various states the peer may be in.
-     +/
+     */
     enum State
     {
-        /++
+        /**
             Init state; invalid.
-         +/
+         */
         unset,
 
-        /++
+        /**
             Peer has a handshake whose timestamp is *below* the timeout and has
             been such for at least one cycle.
-         +/
+         */
         present,
 
-        /++
+        /**
             Peer has a handshake whose timestamp is *above* the timeout and has
             been such for at least one cycle.
-         +/
+         */
         stillLost,
 
-        /++
+        /**
             Peer has a handshake whose timestamp is *below* the timeout but was
             above it last cycle.
-         +/
+         */
         justReturned,
 
-        /++
+        /**
             Peer has a handshake whose timestamp is *above* the timeout but was
             below it last cycle.
-         +/
+         */
         justLost,
 
-        /++
+        /**
             The program was just (re)started and the peer has a handshake whose
             timestamp is *above* the timeout.
-         +/
+         */
         lostOnStartup,
     }
 
-    /++
+    /**
         The public hash of the Wireguard peer in question.
-     +/
+     */
     string hash;
 
-    /++
+    /**
         The state of the peer.
-     +/
+     */
     State state;
 
-    /++
+    /**
         The timestamp of the peer's latest handshake; when it was last seen.
-     +/
+     */
     SysTime timestamp;
 
-    /++
+    /**
         Constructor.
 
         Params:
             hash = The public hash of the Wireguard peer.
-     +/
+     */
     this(const string hash)
     {
         this.hash = hash;
@@ -439,43 +439,43 @@ public:
 
 
 // SortedPeers
-/++
+/**
     A struct containing the current state of the Wireguard peers, sorted by
     connection state.
- +/
+ */
 struct SortedPeers
 {
-    /++
+    /**
         All peers currently present, and have been so for at least one cycle.
-     +/
+     */
     Peer[] present;
 
-    /++
+    /**
         All peers considered to have been lost for at least one cycle.
-     +/
+     */
     Peer[] stillLost;
 
-    /++
+    /**
         All peers that just returned this cycle.
-     +/
+     */
     Peer[] justReturned;
 
-    /++
+    /**
         All peers that we just lost contact with this cycle.
-     +/
+     */
     Peer[] justLost;
 
-    /++
+    /**
         All peers that were lost at program start.
-     +/
+     */
     Peer[] lostOnStartup;
 
-    /++
+    /**
         Whether or not all peers are present, including those that just returned.
 
         Returns:
             `true` if all peers are present; `false` otherwise.
-     +/
+     */
     auto allPresent() const
     {
         return
@@ -486,12 +486,12 @@ struct SortedPeers
             !this.lostOnStartup.length;
     }
 
-    /++
+    /**
         Sorts the peers into the five arrays, one for each [Peer.State].
 
         Params:
             peers = The original associative array of [Peer]s.
-     +/
+     */
     this(const Peer[string] peers) pure @safe
     {
         import std.algorithm.sorting : sort;
@@ -539,55 +539,55 @@ struct SortedPeers
 
 
 // ShellReturnValue
-/++
+/**
     Return values for the program.
- +/
+ */
 enum ShellReturnValue
 {
-    /++
+    /**
         Success.
-     +/
+     */
     success = 0,
 
-    /++
+    /**
         Unspecific failure.
-     +/
+     */
     failure = 1,
 
-    /++
+    /**
         Failure during getopt-parsing.
-     +/
+     */
     getoptFailure = 2,
 
-    /++
+    /**
         An exception was thrown.
-     +/
+     */
     exception = 3,
 
-    /++
+    /**
         A Batsign and/or peer file was missing.
-     +/
+     */
     missingFiles = 4,
 
-    /++
+    /**
         An invalid language was specified.
-     +/
+     */
     invalidLanguage = 5,
 
-    /++
+    /**
         Notification command not found.
-     +/
+     */
     commandNotFound = 6,
 
-    /++
+    /**
         Network error.
-     +/
+     */
     networkError = 7,
 }
 
 
 // getRawHandshakeString
-/++
+/**
     Executes a Wireguard `latest-handshakes` command and returns the raw output.
 
     Params:
@@ -601,7 +601,7 @@ enum ShellReturnValue
         needed to execute the command.
 
         [object.Exception|Exception] on other errors.
- +/
+ */
 auto getRawHandshakeString(const string iface)
 {
     import std.process : execute;
@@ -645,14 +645,14 @@ auto getRawHandshakeString(const string iface)
 
 
 // NeedSudoException
-/++
+/**
     Exception thrown when a command fails due to lack of permissions.
- +/
+ */
 final class NeedSudoException : Exception
 {
-    /++
+    /**
         Constructor.
-     +/
+     */
     this(
         const string message,
         const string file = __FILE__,
@@ -665,19 +665,19 @@ final class NeedSudoException : Exception
 
 
 // NoSuchInterfaceException
-/++
+/**
     Exception thrown when a `wg` command fails due to a non-existent interface supplied.
- +/
+ */
 final class NoSuchInterfaceException : Exception
 {
-    /++
+    /**
         Interface name.
-     +/
+     */
     string iface;
 
-    /++
+    /**
         Constructor.
-     +/
+     */
     this(
         const string message,
         const string iface,
@@ -692,14 +692,14 @@ final class NoSuchInterfaceException : Exception
 
 
 // NetworkException
-/++
+/**
     Exception thrown when a `wg` command fails due to other network errors.
- +/
+ */
 final class NetworkException : Exception
 {
-    /++
+    /**
         Constructor.
-     +/
+     */
     this(
         const string message,
         const string file = __FILE__,
@@ -712,7 +712,7 @@ final class NetworkException : Exception
 
 
 // getHandshakes
-/++
+/**
     Executes a Wireguard `latest-handshakes` command and parses the output.
 
     Creates [Peer]s that represent the peers in the output, and stores them in
@@ -727,7 +727,7 @@ final class NetworkException : Exception
         needed to execute the command (via [getRawHandshakeString]).
 
         [object.Exception|Exception] on other errors (via [getRawHandshakeString]).
- +/
+ */
 void getHandshakes(ref Peer[string] peers, const string iface)
 {
     import std.algorithm.iteration : splitter;
@@ -793,7 +793,7 @@ void getHandshakes(ref Peer[string] peers, const string iface)
 
 
 // parsePeerList
-/++
+/**
     Parses the peer list file and returns a `bool[string]` representing the peers
     listed inside; random bools keyed by peer hashes.
 
@@ -802,7 +802,7 @@ void getHandshakes(ref Peer[string] peers, const string iface)
 
     Returns:
         A `bool[string]` associative array with keys of peer hashes.
- +/
+ */
 auto parsePeerList(const string peerFile)
 {
     import std.algorithm.iteration : splitter;
@@ -835,7 +835,7 @@ auto parsePeerList(const string peerFile)
 
 
 // parseBatsignFile
-/++
+/**
     Reads the Batsign file, parses the URLs therein, and returns it as a `string[]`.
 
     Params:
@@ -846,7 +846,7 @@ auto parsePeerList(const string peerFile)
 
     See_Also:
         https://batsign.me
- +/
+ */
 auto parseBatsignFile(const string batsignFile)
 {
     import lu.string : stripped;
@@ -866,12 +866,12 @@ auto parseBatsignFile(const string batsignFile)
 
 
 // mainLoop
-/++
+/**
     The main loop.
 
     Params:
         context = The context struct.
- +/
+ */
 void mainLoop(const Context context)
 {
     import lu.string : plurality;
@@ -1009,14 +1009,14 @@ void mainLoop(const Context context)
 
 
 // report
-/++
+/**
     Compiles a report of missing peers and sends a notification via Batsign,
     or by invoking a custom command (if defined).
 
     Params:
         context = The context struct.
         sortedPeers = The current state of the Wireguard peers, sorted by connection state.
- +/
+ */
 auto report(
     const Context context,
     const SortedPeers sortedPeers)
@@ -1213,7 +1213,7 @@ auto report(
 
 
 // handleGetopt
-/++
+/**
     Calls [std.getopt.getopt|getopt], parses the passed arguments and returns
     the results.
 
@@ -1225,7 +1225,7 @@ auto report(
 
     Returns:
         The results of [std.getopt.getopt|getopt].
- +/
+ */
 auto handleGetopt(string[] args, out Context context)
 {
     import core.time : seconds;
@@ -1287,7 +1287,7 @@ auto handleGetopt(string[] args, out Context context)
 
 
 // getNameFromHash
-/++
+/**
     Parses a peer hash and returns a Voldemort struct that represents it in terms
     of naming.
 
@@ -1297,7 +1297,7 @@ auto handleGetopt(string[] args, out Context context)
 
     Returns:
         A Voldemort representation of a peer.
- +/
+ */
 auto getNameFromHash(const string fullHash, const string phaseDescriptionPattern)
 {
     import lu.string : advancePast;
@@ -1387,7 +1387,7 @@ unittest
 
 
 // sendBatsign
-/++
+/**
     Sends a notification via Batsign.
 
     Params:
@@ -1399,7 +1399,7 @@ unittest
 
     See_Also:
         https://batsign.me
- +/
+ */
 auto sendBatsign(const Context context, const string body_)
 {
     import lu.conv : toAlpha;
@@ -1448,7 +1448,7 @@ auto sendBatsign(const Context context, const string body_)
 
 
 // runCommand
-/++
+/**
     Runs a custom command to send a notification.
 
     Params:
@@ -1457,7 +1457,7 @@ auto sendBatsign(const Context context, const string body_)
 
     Returns:
         The Voldemort returned by [std.process.execute].
- +/
+ */
 auto runCommand(const string executable, const string body_)
 {
     import std.process : execute;
@@ -1473,7 +1473,7 @@ auto runCommand(const string executable, const string body_)
 
 
 // step
-/++
+/**
     Steps a peer's state, advances it (in terms of a handshake cycle).
 
     Params:
@@ -1482,7 +1482,7 @@ auto runCommand(const string executable, const string body_)
 
     Returns:
         `true` if the state changed; `false` otherwise.
- +/
+ */
 auto step(
     ref Peer peer,
     const bool timedOut)
@@ -1591,9 +1591,9 @@ unittest
 
 
 // printProgramVersion
-/++
+/**
     Prints the program version.
- +/
+ */
 void printProgramVersion() @safe
 {
     alias v = WgMonitorSemVer;
@@ -1606,7 +1606,7 @@ public:
 
 
 // run
-/++
+/**
     Entrypoint.
 
     Params:
@@ -1614,7 +1614,7 @@ public:
 
     Returns:
         A [ShellReturnValue], indicating the program's success or failure.
- +/
+ */
 auto run(string[] args)
 {
     import std.getopt : GetOptException;
@@ -1844,23 +1844,23 @@ auto run(string[] args)
 
 
 // WgMonitorSemVer
-/++
+/**
     SemVer versioning of this build.
- +/
+ */
 enum WgMonitorSemVer
 {
-    /++
+    /**
         SemVer major version of the program.
-     +/
+     */
     major = 0,
 
-    /++
+    /**
         SemVer minor version of the program.
-     +/
+     */
     minor = 0,
 
-    /++
+    /**
         SemVer patch version of the program.
-     +/
+     */
     patch = 1,
 }
