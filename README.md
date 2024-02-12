@@ -15,16 +15,17 @@ Notifications are send as short emails via [Batsign](https://batsign.me), or by 
 ## tl;dr
 
 ```
--i      --iface  (Required)  Wireguard interface name
--p      --peers              Peer list file
--b    --batsign              Batsign URL file
--c    --command              Custom command to use to send notifications
--t    --timeout              Peer timeout in seconds
--s      --sleep              Sleep between peer checks in seconds
--r     --report              How long to wait before repeating a notification
--P   --progress              Print progress messages
--l   --language              Notification language, default english
-      --dry-run              Don't send notifications
+-i           --interface  Wireguard interface name
+-p               --peers  Peer list file
+-b             --batsign  Batsign URL file
+-c             --command  Custom command to use to send notifications
+-t             --timeout  Peer timeout in seconds
+-s               --sleep  Sleep between peer checks in seconds
+-r              --report  How long to wait before repeating a notification
+    --wait-for-interface  Wait for the Wireguard interface to show up
+-P            --progress  Print progress messages
+-l            --language  Notification language, default english
+               --dry-run  Don't send notifications
 
 Available languages: english, swedish, japanese, english-minimal
 ```
