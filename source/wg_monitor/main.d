@@ -258,6 +258,20 @@ struct Context
 private:
     import core.time : Duration, hours, minutes, seconds;
 
+    /++
+        Default language to use for notifications.
+
+        This is the language used if no language is specified with the `-l` flag.
+        It must be one of the languages in [allTranslations], and thus one of the
+        languages in `translations.txt`.
+
+        See_Also:
+            [allTranslations]
+
+            `translations.txt` in the project root.
+     +/
+    enum defaultLanguage = "english";
+
 public:
     /**
         Aggregate of durations used in the program.
@@ -330,7 +344,7 @@ public:
 
             `translations.txt` in the project root.
      */
-    string language = "english";
+    string language = defaultLanguage;
 
     /**
         Translation struct for the current language.
