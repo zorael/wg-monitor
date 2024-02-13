@@ -1175,6 +1175,8 @@ auto report(
         writeln("[+] all present");
     }
 
+    scope(exit) stdout.flush();
+
     stdout.flush();
     const body_ = sink[].join('\n');
 
@@ -1183,7 +1185,6 @@ auto report(
         writeln();
         writeln(body_);
         writeln();
-        stdout.flush();
         return true;
     }
 
@@ -1204,26 +1205,40 @@ auto report(
             writeln(result.output.chomp);
         }
 
-        stdout.flush();
         return success;
     }
     else
     {
-        const success = sendBatsign(context, body_);
+        const failures = sendBatsign(context, body_);
 
-        if (success)
+        if (!failures.length)
         {
             writeln("[+] notification post successful");
+            return true;
         }
-        /*else
-        {
-            // sendBatsign outputs errors internally
-            writeln("[!] notification post failed");
-            stdout.flush();
-        }*/
 
-        stdout.flush();
-        return success;
+        foreach (const failure; failures)
+        {
+            if (failure.exceptionText.length)
+            {
+                writeln("[!] notification post failed: ", failure.exceptionText);
+            }
+            else
+            {
+                writeln("[!] notification post returned status ", failure.code);
+
+                if (failure.code == 404)
+                {
+                    writeln("    (is the URL correct?)");
+                }
+                else
+                {
+                    if (failure.responseBody.length) writeln(failure.responseBody);
+                }
+            }
+        }
+
+        return false;
     }
 }
 
@@ -1429,7 +1444,25 @@ auto sendBatsign(const Context context, const string body_)
     static string[string] headers;
     headers["Content-Length"] = body_.length.toAlpha();
 
-    bool success = true;
+    static struct Failure
+    {
+        int code;
+        string responseBody;
+        string exceptionText;
+
+        this(int code, string responseBody)
+        {
+            this.code = code;
+            this.responseBody = responseBody;
+        }
+
+        this(string exceptionText)
+        {
+            this.exceptionText = exceptionText;
+        }
+    }
+
+    Failure[] failures;
 
     foreach (const url; context.batsignURLs)
     {
@@ -1448,21 +1481,18 @@ auto sendBatsign(const Context context, const string body_)
 
             if ((res.code < 200) || (res.code >= 300))
             {
-                writefln("[!] notification post returned status %s", res.code);
-                //writeln(cast(string)res.responseBody);
-                stdout.flush();
-                success = false;
+                import std.string : chomp;
+                const responseBody = cast(string)res.responseBody;
+                failures ~= Failure(res.code, responseBody.chomp);
             }
         }
         catch (Exception e)
         {
-            writefln("[!] notification post failed: %s", e.msg);
-            stdout.flush();
-            success = false;
+            failures ~= Failure(e.msg);
         }
     }
 
-    return success;
+    return failures;
 }
 
 
