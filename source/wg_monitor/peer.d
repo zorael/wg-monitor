@@ -99,12 +99,14 @@ public:
 struct SortedPeers
 {
     /**
-        All peers currently present, and have been so for at least one cycle.
+        All peers that are currently present and have been so for at least one
+        cycle, unless the program was just started, in which case all present
+        peers are considered to be present.
      */
     Peer[] present;
 
     /**
-        All peers considered to have been lost for at least one cycle.
+        All peers that are considered to have been lost for at least one cycle.
      */
     Peer[] stillLost;
 
@@ -140,7 +142,7 @@ struct SortedPeers
     }
 
     /**
-        Sorts the peers into the five arrays, one for each [Peer.State].
+        Constructor. Sorts the peers into the five arrays, one for each [Peer.State|State].
 
         Params:
             peers = The original associative array of [Peer]s.
@@ -193,11 +195,12 @@ struct SortedPeers
 
 // step
 /**
-    Steps a peer's state, advances it (in terms of a handshake cycle).
+    Steps a peer's state, advancing it (in terms of a handshake cycle).
 
     Params:
         peer = The peer to step the state of.
-        timedOut = Whether or not the peer has timed out.
+        timedOut = Whether or not the peer has a handshake whose timestamp is
+            above the timeout.
 
     Returns:
         `true` if the state changed; `false` otherwise.

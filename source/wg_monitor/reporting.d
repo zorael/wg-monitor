@@ -1,5 +1,5 @@
 /**
-    Reporting module for `wg-monitor`.
+    Reporting bits.
 
     See_Also:
         https://batsign.me
@@ -24,6 +24,8 @@ public:
 /**
     Compiles a report of missing peers and sends a notification via Batsign,
     or by invoking a custom command (if defined).
+
+    If this is a dry run, the report is printed to the terminal instead.
 
     Params:
         context = The context struct.
@@ -253,7 +255,7 @@ auto report(
         phaseDescriptionPattern = The pattern to use for phase descriptions.
 
     Returns:
-        A Voldemort representation of a peer.
+        A Voldemort representation of a peer in terms of naming.
  */
 auto getNameFromHash(const string fullHash, const string phaseDescriptionPattern)
 {
@@ -357,7 +359,7 @@ unittest
         body_ = The body of the notification.
 
     Returns:
-        `true` on full success; `false` on at least one failure.
+        An array of Voldemort structs representing any failures.
 
     See_Also:
         https://batsign.me

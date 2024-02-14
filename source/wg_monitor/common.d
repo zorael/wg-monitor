@@ -1,5 +1,5 @@
 /**
-    Some common stuff.
+    Common things that don't fit anywhere else.
 
     Copyright: [JR](https://github.com/zorael)
     License: [Boost Software License 1.0](https://www.boost.org/users/license.html)
@@ -29,6 +29,9 @@ enum shortHashLength = 7;
 // NeedSudoException
 /**
     Exception thrown when a command fails due to lack of permissions.
+
+    This is used instead of a normal [object.Exception|Exception] so as not to
+    rely on magic strings to discern the cause of a failure.
  */
 final class NeedSudoException : Exception
 {
@@ -49,6 +52,11 @@ final class NeedSudoException : Exception
 // NoSuchInterfaceException
 /**
     Exception thrown when a `wg` command fails due to a non-existent interface supplied.
+
+    Embeds the string name of the missing interface.
+
+    This is used instead of a normal [object.Exception|Exception] so as not to
+    rely on magic strings to discern the cause of a failure.
  */
 final class NoSuchInterfaceException : Exception
 {
@@ -76,6 +84,9 @@ final class NoSuchInterfaceException : Exception
 // NetworkException
 /**
     Exception thrown when a `wg` command fails due to other network errors.
+
+    This is used instead of a normal [object.Exception|Exception] so as not to
+    rely on magic strings to discern the cause of a failure.
  */
 final class NetworkException : Exception
 {
@@ -99,7 +110,6 @@ final class NetworkException : Exception
 
     See_Also:
         https://tldp.org/LDP/abs/html/exitcodes.html
-
         https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Process%20Exit%20Codes
  */
 enum ShellReturnValue

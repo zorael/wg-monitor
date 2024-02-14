@@ -20,6 +20,8 @@ public:
 /**
     Executes a Wireguard `latest-handshakes` command and returns the raw output.
 
+    If there were errors, a relevant exception is thrown.
+
     Params:
         iface = The string name of the Wireguard interface.
 
@@ -47,7 +49,7 @@ auto getRawHandshakeString(const string iface)
     ];
 
     const result = execute(wgCommand[]);
-    const output = result.output.chomp;
+    const output = result.output.chomp();
 
     if (result.status != 0)
     {

@@ -17,14 +17,15 @@ public:
     Translation strings for a language.
 
     String members should have a default value that refers to itself, to make
-    it easier to spot missing translations.
+    it easier to spot missing translations. The exception being
+    [Translation.language|language], which should have an empty default value.
  */
 struct Translation
 {
     /**
         Language name.
      */
-    string language;
+    string language = string.init;
 
     /**
         Translation for "peer", in singular form.
@@ -112,7 +113,6 @@ struct Translation
 
         See_Also:
             [allTranslations]
-
             `translations.txt` in the project root.
      */
     auto inherit(const string language)
@@ -131,14 +131,13 @@ struct Translation
 }
 
 
+// allTranslations
 /**
     Translations statically imported from the `translations.txt` file.
 
     See_Also:
         [Translation]
-
         [allTranslationLanguageNames]
-
         `translations.txt` in the project root.
  */
 static immutable allTranslations = ()
@@ -202,13 +201,11 @@ static immutable allTranslations = ()
 
 // allTranslationLanguageNames
 /**
-    Array of all language names found in `translations.txt`.
+    Array of the names of all languages found in `translations.txt`.
 
     See_Also:
         [Translation]
-
         [allTranslations]
-
         `translations.txt` in the project root.
  */
 static immutable allTranslationLanguageNames =
@@ -217,7 +214,7 @@ static immutable allTranslationLanguageNames =
 
     foreach (const translation; .allTranslations)
     {
-        if (translation.language == "debug") continue;  // omit debug language
+        if (translation.language == "debug") continue;  // omit debug language from list
         languageNames ~= translation.language;
     }
 

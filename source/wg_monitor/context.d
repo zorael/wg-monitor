@@ -26,12 +26,12 @@ private:
         Default language to use for notifications.
 
         This is the language used if no language is specified with the `-l` flag.
-        It must be one of the languages in [allTranslations], and thus one of the
-        languages in `translations.txt`.
+        Must be one of the languages in
+        [wg_monitor.translation.allTranslations|allTranslations], and thus one
+        of the languages in `translations.txt`.
 
         See_Also:
-            [allTranslations]
-
+            [wg_monitor.translation.allTranslations]
             `translations.txt` in the project root.
      */
     enum defaultLanguage = "english";
@@ -46,7 +46,7 @@ public:
     {
         /**
             A peer is considered lost after this amount of time has passed
-            since last Wireguard handshake.
+            since last successful Wireguard handshake.
          */
         Duration peerTimeout = 10.minutes;
 
@@ -56,36 +56,57 @@ public:
         Duration sleepBetweenChecks = 1.minutes;
 
         /**
-            How long to wait before repeating a notification.
+            How long to wait before repeating a notification, even if there were
+            no new peers lost or returned.
          */
         Duration reportPeriodicity = 6.hours;
     }
 
     /**
-        Wireguard interface.
+        Wireguard interface name.
      */
     string iface;
 
     /**
-        File of Batsign URLs.
+        Filename of the Batsign URL file
 
         See_Also:
+            [batsignURLs]
+            [wg_monitor.config.parseBatsignURLs]
+            [wg_monitor.reporting.sendBatsign]
             https://batsign.me
      */
     string batsignFile = "batsign.url";
 
     /**
         Batsign URLs parsed from [batsignFile].
+
+        See_Also:
+            [batsignFile]
+            [wg_monitor.config.parseBatsignURLs]
+            [wg_monitor.reporting.sendBatsign]
+            https://batsign.me
      */
     string[] batsignURLs;
 
     /**
-        File of Wireguard peer hashes.
+        Filename of file of Wireguard peer hashes.
+
+        See_Also:
+            [wg_monitor.peer.Peer]
+            [peerList]
+            [wg_monitorS.config.parsePeerList]
      */
     string peerFile = "peers.list";
 
     /**
         Custom command to run to send notifications, instead of using Batsign.
+
+        If this is set, [batsignFile] and [batsignURLs] are ignored.
+
+        The command is expected to take a single string argument, which is the
+        notification message to send. If anything else is required, a shell
+        script or similar should be used.
      */
     string command;
 
@@ -101,22 +122,31 @@ public:
 
     /**
         Language to use for notifications. Must be one of the languages in
-        [allTranslations], and thus one of the languages in `translations.txt`.
+        [wg_monitor.translation.allTranslations|allTranslations], and thus one
+        of the languages in `translations.txt`.
 
         See_Also:
-            [allTranslations]
-
+            [wg_monitor.translation.allTranslations]
             `translations.txt` in the project root.
      */
     string language = defaultLanguage;
 
     /**
         Translation struct for the current language.
+
+        See_Also:
+            [wg_monitor.translation.Translation]
+            [wg_monitor.translation.allTranslations]
      */
     Translation translation;
 
     /**
         Associative array of peer hashes.
+
+        See_Also:
+            [wg_monitor.peer.Peer]
+            [peerFile]
+            [wg_monitorS.config.parsePeerList]
      */
     bool[string] peerList;
 
@@ -126,23 +156,23 @@ public:
     bool progress = true;
 
     /**
-        Whether or not to skip the intro message.
+        Whether or not to skip the intro message. Used internally.
      */
     bool skipIntro = false;
 
     /**
-        Whether or not to perform a dry run.
+        Whether or not to perform a dry run; to not actually send any notifications.
      */
     bool dryRun = false;
 
     /**
-        Whether to wait for a Wireguard interface to show up, or to abotr and
+        Whether to wait for a Wireguard interface to show up, or to abort and
         exit if it doesn't exist during start-up.
      */
     bool waitForInterface = false;
 
     /**
-        Whether or not the program was re-executed with `exec`.
+        Whether or not the program was re-executed with `exec`. Used internally.
      */
     bool reexecuted = false;
 }

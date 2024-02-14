@@ -1,5 +1,5 @@
 /**
-    Configuration and argument parsing for `wg-monitor`.
+    Configuration and argument parsing bits.
 
     Copyright: [JR](https://github.com/zorael)
     License: [Boost Software License 1.0](https://www.boost.org/users/license.html)
@@ -93,14 +93,13 @@ auto handleGetopt(string[] args, out Context context)
 }
 
 
-
 // parsePeerList
 /**
     Parses the peer list file and returns a `bool[string]` representing the peers
     listed inside; random bools keyed by peer hashes.
 
     Params:
-        peerFile = The peer list file.
+        peerFile = Path to the peer list file.
 
     Returns:
         A `bool[string]` associative array with keys of peer hashes.
@@ -140,10 +139,10 @@ auto parsePeerList(const string peerFile)
 
 // parseBatsignFile
 /**
-    Reads the Batsign file, parses the URLs therein, and returns it as a `string[]`.
+    Reads the Batsign file, parses the URLs therein, and returns them as a `string[]`.
 
     Params:
-        batsignFile = The Batsign file.
+        batsignFile = Path to the Batsign file.
 
     Returns:
         A `string[]` of Batsign URLs.
