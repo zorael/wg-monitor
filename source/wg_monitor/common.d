@@ -96,6 +96,11 @@ final class NetworkException : Exception
 // ShellReturnValue
 /**
     Return values for the program.
+
+    See_Also:
+        https://tldp.org/LDP/abs/html/exitcodes.html
+
+        https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#Process%20Exit%20Codes
  */
 enum ShellReturnValue
 {
@@ -112,35 +117,35 @@ enum ShellReturnValue
     /**
         Failure during getopt-parsing.
      */
-    getoptFailure = 2,
+    getoptFailure = 8,
 
     /**
         A generic exception was thrown.
      */
-    exception = 3,
+    exception = 9,
 
     /**
         A Batsign and/or peer file was missing.
      */
-    missingFiles = 4,
+    missingFiles = 10,
 
     /**
         An invalid language was specified.
      */
-    invalidLanguage = 5,
+    invalidLanguage = 11,
 
     /**
         Notification command not found.
      */
-    commandNotFound = 6,
+    commandNotFound = 12,
 
     /**
         Network error.
      */
-    networkError = 7,
+    networkError = 13,
 
     /**
         Some other error occurred with regards to permissions.
      */
-    otherPermissionsError = 8,
+    otherPermissionsError = 14,
 }
