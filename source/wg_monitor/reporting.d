@@ -17,6 +17,213 @@ private:
 import wg_monitor.context : Context;
 import wg_monitor.peer : SortedPeers;
 
+
+// getNameFromHash
+/**
+    Parses a peer hash and returns a Voldemort struct that represents it in terms
+    of naming.
+
+    Params:
+        fullHash = The full peer hash.
+        phaseDescriptionPattern = The pattern to use for phase descriptions.
+
+    Returns:
+        A Voldemort representation of a peer in terms of naming.
+ */
+auto getNameFromHash(const string fullHash, const string phaseDescriptionPattern)
+{
+    import wg_monitor.common : shortHashLength;
+    import lu.string : advancePast;
+    import std.string : indexOf;
+
+    static struct PeerRepresentation
+    {
+        string name;
+        string hash;
+        uint phase;
+
+        string phaseDescriptionPattern;
+
+        auto toString() const
+        {
+            import std.array : replace;
+            import std.conv : to;
+            import std.string : capitalize;
+
+            if (phase)
+            {
+                return this.phaseDescriptionPattern
+                    .replace("$phaseName", this.name.capitalize())
+                    .replace("$phaseNumber", this.phase.to!string);
+            }
+            else
+            {
+                return this.name.capitalize();
+            }
+        }
+    }
+
+    PeerRepresentation peerRep;
+    peerRep.hash = fullHash;
+    peerRep.phaseDescriptionPattern = phaseDescriptionPattern;
+    string slice = fullHash[0..shortHashLength];
+
+    if (slice.indexOf('+') != -1)
+    {
+        import std.ascii : isDigit;
+
+        peerRep.name = slice.advancePast('+');
+
+        if (slice.length && slice[0].isDigit)
+        {
+            enum asciiNumberOffset = 48;
+            peerRep.phase = (slice[0] - asciiNumberOffset);
+
+            if ((peerRep.phase < 1) || (peerRep.phase > 3))
+            {
+                // phases are 1-3; reset to 0 if invalid
+                peerRep.phase = 0;
+            }
+        }
+    }
+    else if (slice.indexOf('/') != -1)
+    {
+        peerRep.name = slice.advancePast('/');
+    }
+    else
+    {
+        peerRep.name = slice;
+    }
+
+    return peerRep;
+}
+
+///
+unittest
+{
+    import wg_monitor.common : shortHashLength;
+
+    static if (shortHashLength >= 6)
+    {
+        import std.conv : to;
+
+        {
+            enum hash = "44aN+J6y0BDf6hO8nbxlsKXVt+W9lra5KBaS7aUtgba=";
+            const peer = getNameFromHash(hash, string.init);
+            assert((peer.name == "44aN"), peer.name);
+            assert(!peer.phase, peer.phase.to!string);
+        }
+        {
+            enum hash = "44AN+1/fHCM12yay8WUitW1S3bxvRtulWnSQdHDeGab=";
+            const peer = getNameFromHash(hash, string.init);
+            assert((peer.name == "44AN"), peer.name);
+            assert((peer.phase == 1), peer.phase.to!string);
+        }
+    }
+}
+
+
+// sendBatsign
+/**
+    Sends a notification via Batsign.
+
+    Params:
+        context = The context struct.
+        body_ = The body of the notification.
+
+    Returns:
+        An array of Voldemort structs representing any failures.
+
+    See_Also:
+        https://batsign.me
+ */
+auto sendBatsign(const Context context, const string body_)
+{
+    import lu.conv : toAlpha;
+    import core.time : seconds;
+
+    static immutable postTimeout = 10.seconds;  // hardcoded
+
+    static string[string] headers;
+    headers["Content-Length"] = body_.length.toAlpha();
+
+    static struct Failure
+    {
+        int code;
+        string responseBody;
+        string exceptionText;
+
+        this(int code, string responseBody)
+        {
+            this.code = code;
+            this.responseBody = responseBody;
+        }
+
+        this(string exceptionText)
+        {
+            this.exceptionText = exceptionText;
+        }
+    }
+
+    Failure[] failures;
+
+    foreach (const url; context.batsignURLs)
+    {
+        import requests : Request;
+
+        auto req = Request();
+        //req.verbosity = 1;
+        req.keepAlive = false;
+        req.timeout = postTimeout;
+        req.addHeaders(headers);
+        if (context.caBundleFile.length) req.sslSetCaCert(context.caBundleFile);
+
+        try
+        {
+            auto res = req.post(url, body_);
+
+            if ((res.code < 200) || (res.code >= 300))
+            {
+                import std.string : chomp;
+                const responseBody = cast(string)res.responseBody;
+                failures ~= Failure(res.code, responseBody.chomp());
+            }
+        }
+        catch (Exception e)
+        {
+            failures ~= Failure(e.msg);
+        }
+    }
+
+    return failures;
+}
+
+
+// runCommand
+/**
+    Runs a custom command to send a notification.
+
+    Params:
+        command = The command to run.
+        body_ = The body of the notification.
+
+    Returns:
+        The Voldemort returned by [std.process.execute].
+ */
+auto runCommand(const string executable, const string body_)
+{
+    import std.process : execute;
+
+    const string[2] command =
+    [
+        executable,
+        body_,
+    ];
+
+    return execute(command[]);
+}
+
+
 public:
 
 
@@ -242,210 +449,4 @@ auto report(
 
         return false;
     }
-}
-
-
-// getNameFromHash
-/**
-    Parses a peer hash and returns a Voldemort struct that represents it in terms
-    of naming.
-
-    Params:
-        fullHash = The full peer hash.
-        phaseDescriptionPattern = The pattern to use for phase descriptions.
-
-    Returns:
-        A Voldemort representation of a peer in terms of naming.
- */
-auto getNameFromHash(const string fullHash, const string phaseDescriptionPattern)
-{
-    import wg_monitor.common : shortHashLength;
-    import lu.string : advancePast;
-    import std.string : indexOf;
-
-    static struct PeerRepresentation
-    {
-        string name;
-        string hash;
-        uint phase;
-
-        string phaseDescriptionPattern;
-
-        auto toString() const
-        {
-            import std.array : replace;
-            import std.conv : to;
-            import std.string : capitalize;
-
-            if (phase)
-            {
-                return this.phaseDescriptionPattern
-                    .replace("$phaseName", this.name.capitalize())
-                    .replace("$phaseNumber", this.phase.to!string);
-            }
-            else
-            {
-                return this.name.capitalize();
-            }
-        }
-    }
-
-    PeerRepresentation peerRep;
-    peerRep.hash = fullHash;
-    peerRep.phaseDescriptionPattern = phaseDescriptionPattern;
-    string slice = fullHash[0..shortHashLength];
-
-    if (slice.indexOf('+') != -1)
-    {
-        import std.ascii : isDigit;
-
-        peerRep.name = slice.advancePast('+');
-
-        if (slice.length && slice[0].isDigit)
-        {
-            enum asciiNumberOffset = 48;
-            peerRep.phase = (slice[0] - asciiNumberOffset);
-
-            if ((peerRep.phase < 1) || (peerRep.phase > 3))
-            {
-                // phases are 1-3; reset to 0 if invalid
-                peerRep.phase = 0;
-            }
-        }
-    }
-    else if (slice.indexOf('/') != -1)
-    {
-        peerRep.name = slice.advancePast('/');
-    }
-    else
-    {
-        peerRep.name = slice;
-    }
-
-    return peerRep;
-}
-
-///
-unittest
-{
-    import wg_monitor.common : shortHashLength;
-
-    static if (shortHashLength >= 6)
-    {
-        import std.conv : to;
-
-        {
-            enum hash = "44aN+J6y0BDf6hO8nbxlsKXVt+W9lra5KBaS7aUtgba=";
-            const peer = getNameFromHash(hash, string.init);
-            assert((peer.name == "44aN"), peer.name);
-            assert(!peer.phase, peer.phase.to!string);
-        }
-        {
-            enum hash = "44AN+1/fHCM12yay8WUitW1S3bxvRtulWnSQdHDeGab=";
-            const peer = getNameFromHash(hash, string.init);
-            assert((peer.name == "44AN"), peer.name);
-            assert((peer.phase == 1), peer.phase.to!string);
-        }
-    }
-}
-
-
-// sendBatsign
-/**
-    Sends a notification via Batsign.
-
-    Params:
-        context = The context struct.
-        body_ = The body of the notification.
-
-    Returns:
-        An array of Voldemort structs representing any failures.
-
-    See_Also:
-        https://batsign.me
- */
-auto sendBatsign(const Context context, const string body_)
-{
-    import lu.conv : toAlpha;
-    import core.time : seconds;
-
-    static immutable postTimeout = 10.seconds;  // hardcoded
-
-    static string[string] headers;
-    headers["Content-Length"] = body_.length.toAlpha();
-
-    static struct Failure
-    {
-        int code;
-        string responseBody;
-        string exceptionText;
-
-        this(int code, string responseBody)
-        {
-            this.code = code;
-            this.responseBody = responseBody;
-        }
-
-        this(string exceptionText)
-        {
-            this.exceptionText = exceptionText;
-        }
-    }
-
-    Failure[] failures;
-
-    foreach (const url; context.batsignURLs)
-    {
-        import requests : Request;
-
-        auto req = Request();
-        //req.verbosity = 1;
-        req.keepAlive = false;
-        req.timeout = postTimeout;
-        req.addHeaders(headers);
-        if (context.caBundleFile.length) req.sslSetCaCert(context.caBundleFile);
-
-        try
-        {
-            auto res = req.post(url, body_);
-
-            if ((res.code < 200) || (res.code >= 300))
-            {
-                import std.string : chomp;
-                const responseBody = cast(string)res.responseBody;
-                failures ~= Failure(res.code, responseBody.chomp());
-            }
-        }
-        catch (Exception e)
-        {
-            failures ~= Failure(e.msg);
-        }
-    }
-
-    return failures;
-}
-
-
-// runCommand
-/**
-    Runs a custom command to send a notification.
-
-    Params:
-        command = The command to run.
-        body_ = The body of the notification.
-
-    Returns:
-        The Voldemort returned by [std.process.execute].
- */
-auto runCommand(const string executable, const string body_)
-{
-    import std.process : execute;
-
-    const string[2] command =
-    [
-        executable,
-        body_,
-    ];
-
-    return execute(command[]);
 }
