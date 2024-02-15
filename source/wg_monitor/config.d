@@ -93,24 +93,30 @@ auto handleGetopt(string[] args, out Context context)
 }
 
 
-// parsePeerList
+// parsePeerFile
 /**
-    Parses the peer list file and returns a `bool[string]` representing the peers
-    listed inside; random bools keyed by peer hashes.
+    Parses the peer list file and returns a Voldemort containing a `bool[string]`
+    representing the peers listed inside; random bools keyed by peer hashes.
 
     Params:
         peerFile = Path to the peer list file.
 
     Returns:
-        A `bool[string]` associative array with keys of peer hashes.
+        A Voldemort `Result` struct.
  */
-auto parsePeerList(const string peerFile)
+auto parsePeerFile(const string peerFile)
 {
     import std.algorithm.iteration : splitter;
     import std.file : readText;
     import std.string : chomp;
 
-    bool[string] peerList;
+    static struct PeerFileHashes
+    {
+        bool[string] valid;
+        string[] invalid;
+    }
+
+    PeerFileHashes result;
     auto peerLineRange = peerFile
         .readText()  // TOCTTOU
         .chomp()
@@ -125,15 +131,14 @@ auto parsePeerList(const string peerFile)
         if (!hash.length || (hash[0] == '#')) continue;
         else if ((hash.length != 44) || (hash[43] != '='))
         {
-            import std.stdio : stdout, writeln;
-            writeln("[!] invalid hash ignored: ", hash);
-            stdout.flush();
+            result.invalid ~= hash;
+            continue;
         }
 
-        peerList[hash] = true;
+        result.valid[hash] = true;
     }
 
-    return peerList;
+    return result;
 }
 
 

@@ -235,7 +235,7 @@ public:
 auto run(string[] args)
 {
     import wg_monitor.common : NeedSudoException, NetworkException, ShellReturnValue;
-    import wg_monitor.config : handleGetopt, parseBatsignFile, parsePeerList;
+    import wg_monitor.config : handleGetopt, parseBatsignFile, parsePeerFile;
     import std.getopt : GetOptException;
     import std.stdio : stdout, writefln, writeln;
 
@@ -371,7 +371,18 @@ auto run(string[] args)
             return ShellReturnValue.invalidLanguage;
         }
 
-        context.peerList = parsePeerList(context.peerFile);
+        auto peerFileHashes = parsePeerFile(context.peerFile);
+
+        if (peerFileHashes.invalid.length)
+        {
+            foreach (hash; peerFileHashes.invalid)
+            {
+                writeln("[!] invalid hash ignored: ", hash);
+            }
+            stdout.flush();
+        }
+
+        context.peerList = peerFileHashes.valid;
 
         if (!context.peerList.length)
         {
