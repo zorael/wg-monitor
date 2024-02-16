@@ -2,9 +2,9 @@
 
 Monitors other peers in a [Wireguard VPN](https://www.wireguard.com) and sends a notification if contact with a peer is lost.
 
-The main purpose of this is to monitor Internet-connected locations for power outages, using Wireguard handshakes as a way for locations to phone home. Each location needs an always-on, always-connected computer to act as a Wireguard peer, for which something like a [Raspberry Pi Zero 2W](https://www.raspberrypi.com/products/raspberry-pi-zero-2-w) is more than sufficient.
+The main purpose of this is to monitor Internet-connected locations for power outages, using Wireguard handshakes as a way for locations to phone home. Each location needs an always-on, always-connected computer to act as a Wireguard peer, for which something like a [Raspberry Pi Zero 2W](https://www.raspberrypi.com/products/raspberry-pi-zero-2-w) is cheap and more than sufficient.
 
-In a hub-and-spoke Wireguard configuration, this should be run on the hub server, ideally with an additional instance on one (or more) of the other peers to monitor the hub. In other configurations, it can be run on any peer with visibility of other peers, but a secondary instance monitoring the first is recommended in any setup.
+In a hub-and-spoke Wireguard configuration, this should be run on the hub server, ideally with an additional instance on (at least) one other geographically disconnected peer to monitor the hub. In other configurations, it can be run on any peer with visibility of other peers, but a secondary instance monitoring the first is recommended in any setup.
 
 Peers must have a `PersistentKeepalive` setting in their Wireguard configuration with a value *lower* than the peer timeout of this program. This is **600 seconds** by default, but can be overridden via a command-line switch.
 
@@ -36,7 +36,7 @@ $ sudo wg show [interface] peers
 
 ### Batsign
 
-The `batsign.url` file should contain one or more [Batsign](https://batsign.me) URLs. Batsign is a free service with which you can send brief emails to yourself by issuing simple HTTP requests. See [the homepage](https://batsign.me) for more information. (Requires registering.)
+The `batsign.url` file should contain one or more [Batsign](https://batsign.me) URLs. Batsign is a free service with which you can send brief emails to yourself by issuing simple HTTP requests. See [the homepage](https://batsign.me) for more information. (Requires registration.)
 
 ### Notification commands
 
@@ -79,8 +79,7 @@ It is meant to work well with `wg-quick@.service`. If other methods of setting u
 ## built with
 
 * [**D**](https://dlang.org)
-* [`dub`](https://code.dlang.org)
 
 ## license
 
-This project is licensed under the **Boost Software License 1.0** - see the [`LICENSE`](LICENSE) file for details.
+This project is licensed under the **Boost Software License 1.0**; see the [`LICENSE`](LICENSE) file for details.
