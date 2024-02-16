@@ -31,5 +31,5 @@ enum WgMonitorSemVer
     /**
         SemVer patch version of the program.
      */
-    patch = 1,
+    patch = 2,
 }
