@@ -8,11 +8,23 @@ In a hub-and-spoke Wireguard configuration, this should be run on the hub server
 
 Peers must have a `PersistentKeepalive` setting in their Wireguard configuration with a value *lower* than the peer timeout of this program. This is **600 seconds** by default, but can be overridden via a command-line switch.
 
-Notifications are sent as short emails via [**Batsign**](https://batsign.me), or by invocation of a specified command.
+Notifications are sent as short emails via [**Batsign**](#batsign), or by invocation of a specified command.
 
 **This program is Posix-only until such time a console `wg` tool exists for Windows.**
 
 ## tl;dr
+
+You require a [**D**](https://dlang.org) compiler. The program supports being built with all three compiler vendors; the reference compiler [**dmd**](https://dlang.org/download.html), the LLVM-based [**ldc**](https://github.com/ldc-developers/ldc#installation), and the GCC-based [**gdc**](https://gdcproject.org). The first is very fast to compile and is always the most recent in terms of compiler development, but the latter two are also available in most package repositories, and have the advantage of being able to compile for non-x86 architectures (e.g. ARM). Generally **ldc** is the go-to choice there. Some version restrictions apply; notably **gdc** requires at least release series **12**.
+
+If no compilers are available from your normal software sources, you can install one using the official [`install.sh`](https://dlang.org/install.html) script. (**gdc** is not available via this script.)
+
+The [**dub**](https://dub.pm/cli-reference/dub) package manager is used to facilitate compilation and dependency management.
+
+```shell
+$ dub build
+```
+
+## usage
 
 ```
 -i           --interface  Wireguard interface name
@@ -34,11 +46,11 @@ The peer file should contain a list of public keys of Wireguard peers, one per l
 $ sudo wg show [interface] peers
 ```
 
-### Batsign
+### batsign
 
-The `batsign.url` file should contain one or more [Batsign](https://batsign.me) URLs. Batsign is a free service with which you can send brief emails to yourself by issuing simple HTTP requests. See [the homepage](https://batsign.me) for more information. (Requires registration.)
+The `batsign.url` file should contain one or more [**Batsign**](https://batsign.me) URLs. Batsign is a free service with which you can send brief emails to yourself by issuing simple HTTP requests. Requires registration.
 
-### Notification commands
+### notification commands
 
 A custom command can be specified to be run instead of sending a batsign when a peer is lost. Note however that the command will be invoked by the `wg-monitor` process, and as such by the same user it was started as. This will in all likelihood be **root**, since the program calls itself with `sudo` if it is missing permissions to access the Wireguard interface. This imposes some limitations on what kind of commands can be used.
 
@@ -74,6 +86,7 @@ It is meant to work well with `wg-quick@.service`. If other methods of setting u
 
 ## roadmap
 
+* sendmail support
 * configuration file?
 
 ## built with
