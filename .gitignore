@@ -16,9 +16,10 @@
 
 # DUB
 .dub
+/dub.selections.json
 docs.json
 __dummy.html
-docs/
+/docs/
 
 # Code coverage
 *.lst
@@ -38,3 +39,15 @@ wgm
 # tracy
 /trace.tracy
 /trace.json
+
+# project-specific
+/batsign.url
+/peers.list
+
+# compilers
+/1.*
+/2.*
+
+# adrdox
+/generated-docs
+/skeleton.html
