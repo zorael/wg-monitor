@@ -387,7 +387,7 @@ auto report(
     scope(exit) stdout.flush();
 
     stdout.flush();
-    const body_ = sink[].join('\n');
+    const body_ = sink.data.join('\n');
 
     if (context.dryRun)
     {

@@ -25,7 +25,7 @@ public:
     See_Also:
         [wg_monitor.common.ShellReturnValue]
  */
-auto main(string[] args)
+int main(string[] args)
 {
     import wg_monitor.main : run;
     return int(run(args));

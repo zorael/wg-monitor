@@ -69,8 +69,8 @@ void mainLoop(const Context context)
                 import core.thread : Thread;
                 import core.time : seconds;
 
-                static immutable wait = 10.seconds;
-                Thread.sleep(wait);
+                static immutable initWaitForInterfaceWait = 10.seconds;
+                Thread.sleep(initWaitForInterfaceWait);
             }
         }
     }
@@ -138,8 +138,8 @@ void mainLoop(const Context context)
                     import core.thread : Thread;
                     import core.time : seconds;
 
-                    static immutable wait = 10.seconds;
-                    Thread.sleep(wait);
+                    static immutable suddenWaitForInterfaceWait = 10.seconds;
+                    Thread.sleep(suddenWaitForInterfaceWait);
                     //continue inner;
                 }
             }
