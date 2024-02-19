@@ -13,10 +13,12 @@
 
 # Executables
 *.exe
+/wg-monitor
+/wg-monitor-test*
 
 # DUB
 .dub
-/dub.selections.json
+dub.selections.json
 docs.json
 __dummy.html
 /docs/
@@ -24,15 +26,10 @@ __dummy.html
 # Code coverage
 *.lst
 
-# extras
-/wg-monitor
-wg-monitor.so
-wg-monitor.dylib
-wg-monitor.dll
-wg-monitor.a
-wg-monitor.lib
-wg-monitor-test-*
-wgm
+# Other directories
+.vscode/
+
+# Misc
 *.pdb
 *.ls
 
@@ -40,14 +37,18 @@ wgm
 /trace.tracy
 /trace.json
 
-# project-specific
-/batsign.url
-/peers.list
-
 # compilers
 /1.*
 /2.*
+/dub
 
 # adrdox
 /generated-docs
 /skeleton.html
+
+# dustmite
+/RED
+
+# project-specific
+/batsign.url
+/peers.list
