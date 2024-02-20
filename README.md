@@ -14,11 +14,11 @@ Notifications are sent as short emails via [**Batsign**](#batsign), or by invoca
 
 ## tl;dr
 
-You require a [**D**](https://dlang.org) compiler. The program supports being built with all three compiler vendors; the reference compiler [**dmd**](https://dlang.org/download.html), the LLVM-based [**ldc**](https://github.com/ldc-developers/ldc#installation), and the GCC-based [**gdc**](https://gdcproject.org). The first is very fast to compile and is always the most recent in terms of compiler development, but the latter two are also available in most package repositories, and have the advantage of being able to compile for non-x86 architectures (e.g. ARM). Generally **ldc** is the go-to choice there. Some version restrictions apply; notably **gdc** requires at least release series **12**.
+You require a [**D**](https://dlang.org) compiler. The program supports being built with compilers from all three compiler vendors; the reference compiler [**dmd**](https://dlang.org/download.html), the LLVM-based [**ldc**](https://github.com/ldc-developers/ldc#installation), and the GCC-based [**gdc**](https://gdcproject.org). The first is very fast to compile and is always the most recent in terms of compiler development, but the latter two are also available in most package repositories, and have the advantage of being able to compile for non-x86 architectures (e.g. ARM). Generally **ldc** is the go-to choice there. Some version restrictions apply; notably **gdc** requires at least release series **12** to successfully build the program.
 
-If no compilers are available from your normal software sources, you can install one using the official [`install.sh`](https://dlang.org/install.html) script. (**gdc** is not available via this script.)
+If no compilers are available from your normal software sources, you can install one using the official [`install.sh`](https://dlang.org/install.html) script. (**gdc** is not available via this method.)
 
-The [**dub**](https://dub.pm/cli-reference/dub) package manager is used to facilitate compilation and dependency management.
+The [**dub**](https://dub.pm/cli-reference/dub) package manager is used to facilitate compilation and dependency management. It is included with the compiler if installed via the script, and is otherwise commonly available as a separate package in most repositories.
 
 ```shell
 $ dub build
@@ -27,6 +27,9 @@ $ dub build
 ## usage
 
 ```
+wireguard monitor v0.0.2 | copyright 2024 jr
+$ git clone https://github.com/zorael/wg-monitor.git
+
 -i           --interface  Wireguard interface name
 -p               --peers  Peer list file
 -b             --batsign  Batsign URL file
@@ -58,7 +61,7 @@ A custom command can be specified to be run instead of sending a batsign when a 
 
 ## systemd service
 
-The program is preferably run as a systemd service, to have it be automatically restarted upon restoration of power. To facilitate this, a systemd service unit file is provided in the repository. It will have to be copied into `/etc/systemd/system`, after which you can use `systemctl edit` to create a drop-in file for the service that overrides the `ExecStart` and `WorkingDirectory` lines to point to the correct location of the `wg-monitor` binary.
+The program is preferably run as a systemd service, to have it be automatically restarted upon restoration of power. To facilitate this, a systemd service unit file is provided in the repository. It will have to be copied (or symlinked) into `/etc/systemd/system`, after which you can use `systemctl edit` to create a drop-in file for the service that overrides the `ExecStart` and `WorkingDirectory` directives to point to the actual location of the `wg-monitor` binary. An empty `ExecStart=` must be used to clear the default value as the `Exec*` directives are additive.
 
 ```shell
 $ sudo cp wg-monitor@.service /etc/systemd/system
@@ -71,8 +74,8 @@ $ sudo systemctl edit wg-monitor@.service
 
 [Service]
 ExecStart=
-ExecStart=/main/src/wg-monitor/wg-monitor --interface=%i --progress=false --wait-for-interface --language=swedish
-WorkingDirectory=/main/src/wg-monitor
+ExecStart=/home/user/src/wg-monitor/wg-monitor --interface=%i --progress=false --wait-for-interface --language=swedish
+WorkingDirectory=/home/user/src/wg-monitor
 
 ### Edits below this comment will be discarded
 # [...]
@@ -87,7 +90,7 @@ It is meant to work well with `wg-quick@.service`. If other methods of setting u
 ## roadmap
 
 * sendmail support
-* configuration file?
+* configuration file? would pollute `/etc`
 
 ## built with
 
