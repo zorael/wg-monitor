@@ -213,9 +213,11 @@ void printProgramVersion() @safe
     import wg_monitor.semver : WgMonitorSemVer;
     import std.stdio : writefln, writeln;
 
+    enum sourceURL = "https://github.com/zorael/wg-monitor";
+
     alias v = WgMonitorSemVer;
     writefln("wireguard monitor v%d.%d.%d | copyright 2024 jr", v.major, v.minor, v.patch);
-    writeln("$ git clone https://github.com/zorael/wg-monitor");
+    writeln("$ git clone " ~ sourceURL ~ ".git");
 }
 
 
