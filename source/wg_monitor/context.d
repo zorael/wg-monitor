@@ -175,4 +175,9 @@ public:
         Whether or not the program was re-executed with `exec`. Used internally.
      */
     bool reexecuted = false;
+
+    /**
+        Whether or not to show the version string and exit immediately.
+     */
+    bool showVersionAndExit = false;
 }

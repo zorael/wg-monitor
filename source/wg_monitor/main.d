@@ -241,6 +241,24 @@ auto run(string[] args)
     import std.getopt : GetOptException;
     import std.stdio : stdout, writefln, writeln;
 
+    static void printIntro()
+    {
+        printProgramVersion();
+        writeln(' ');
+    }
+
+    static void printError(const string message)
+    {
+        writeln("[!] ", message);
+        writeln("[+] see --help for more information");
+    }
+
+    static void printIntroError(const string message)
+    {
+        printIntro();
+        printError(message);
+    }
+
     scope(exit) stdout.flush();
 
     Context context;
@@ -265,11 +283,14 @@ auto run(string[] args)
 
                 static auto shouldSkipFlag(const Option opt)
                 {
+                    import std.algorithm.comparison : among;
                     return
                         (opt.optShort == "-h") ||
-                        (opt.optLong == "--skip-intro") ||
-                        (opt.optLong == "--cacert") ||
-                        (opt.optLong == "--reexec");
+                        opt.optLong.among!(
+                            "--skip-intro",
+                            "--reexec",
+                            "--version",
+                            "--cacert");
                 }
 
                 foreach (opt; options)
@@ -295,28 +316,26 @@ auto run(string[] args)
 
             enum languagePattern = "Available languages: %-(%s, %)";
 
-            printProgramVersion();
-            writeln();
+            printIntro();
             customGetoptPrinter(getoptResults.options);
-            writeln();
+            writeln(' ');
             writefln(languagePattern, allTranslationLanguageNames);
             return ShellReturnValue.success;
         }
     }
     catch (GetOptException e)
     {
-        printProgramVersion();
-        writeln(' ');
-        writeln("[!] ", e.msg);
-        writeln("[+] see --help for more information");
+        printIntroError(e.msg);
         return ShellReturnValue.getoptFailure;
     }
 
-    if (!context.skipIntro)
+    if (context.showVersionAndExit)
     {
         printProgramVersion();
-        writeln(' ');
+        return ShellReturnValue.success;
     }
+
+    if (!context.skipIntro) printIntro();
 
     try
     {
@@ -402,6 +421,13 @@ auto run(string[] args)
 
         // as above, exit here to have both messages printed
         if (!context.peerList.length || !context.batsignURLs.length) return ShellReturnValue.missingFiles;
+
+        if (!context.iface.length)
+        {
+            // intro already printed
+            printError("no interface provided");
+            return ShellReturnValue.getoptFailure;
+        }
 
         if (!context.skipIntro)
         {

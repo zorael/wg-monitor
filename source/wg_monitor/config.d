@@ -41,7 +41,7 @@ auto handleGetopt(string[] args, out Context context)
 
     auto result = std.getopt.getopt(args,
         std.getopt.config.caseSensitive,
-        std.getopt.config.required,
+        //std.getopt.config.required,
         "i|interface",
             "Wireguard interface name",
             &context.iface,
@@ -83,7 +83,10 @@ auto handleGetopt(string[] args, out Context context)
             &context.reexecuted,
         "dry-run",
             "Don't send notifications",
-            &context.dryRun);
+            &context.dryRun,
+        "version",
+            string.init,
+            &context.showVersionAndExit);
 
     if (peerTimeout >= 0) context.durations.peerTimeout = peerTimeout.seconds;
     if (sleepBetweenChecks > 0) context.durations.sleepBetweenChecks = sleepBetweenChecks.seconds;
