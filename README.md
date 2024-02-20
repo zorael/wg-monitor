@@ -55,13 +55,17 @@ The `batsign.url` file should contain one or more [**Batsign**](https://batsign.
 
 ### notification commands
 
-A custom command can be specified to be run instead of sending a batsign when a peer is lost. Note however that the command will be invoked by the `wg-monitor` process, and as such by the same user it was started as. This will in all likelihood be **root**, since the program calls itself with `sudo` if it is missing permissions to access the Wireguard interface. This imposes some limitations on what kind of commands can be used.
+A custom command can be specified to be run instead of sending a batsign when a peer is lost. It will be invoked with the body of the notification as its first argument.
 
-> Batsign URLs are not necessary if a custom command is used for notifications.
+Note that the command will be called by the `wg-monitor` process, and as such by the same user it was started as. This will in all likelihood be **root**, since the program calls itself with `sudo` if it is missing permissions to access the Wireguard interface. This imposes some limitations on what kind of commands can be used without taking extra steps.
 
-## systemd service
+A `notify-send.sh` script is included in the repository, which *does* take these extra steps and can be used to send desktop notifications on a Linux system with a graphical environment. It can probably be used as a template for other commands.
 
-The program is preferably run as a systemd service, to have it be automatically restarted upon restoration of power. To facilitate this, a systemd service unit file is provided in the repository. It will have to be copied (or symlinked) into `/etc/systemd/system`, after which you can use `systemctl edit` to create a drop-in file for the service that overrides the `ExecStart` and `WorkingDirectory` directives to point to the actual location of the `wg-monitor` binary. An empty `ExecStart=` must be used to clear the default value as the `Exec*` directives are additive.
+Batsign URLs are not necessary if a custom command is used for notifications.
+
+### systemd service
+
+The program is preferably run as a systemd service, to have it be automatically restarted upon restoration of power. To facilitate this, a systemd service unit file is provided in the repository. It will have to be copied (or symlinked) into `/etc/systemd/system`, after which you can use `systemctl edit` to create a drop-in file for the service that overrides the `ExecStart` and `WorkingDirectory` directives to point to the actual location of the `wg-monitor` binary. An empty `ExecStart=` must be used to clear the default value, as the `Exec*` directives are additive.
 
 ```shell
 $ sudo cp wg-monitor@.service /etc/systemd/system
