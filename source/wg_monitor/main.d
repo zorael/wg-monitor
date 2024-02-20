@@ -348,7 +348,8 @@ auto run(string[] args)
 
         if (!peerFileExists)
         {
-            File(context.peerFile, "w").writeln();
+            enum emptyFileContents = "# add peer hashes here, one per line.";
+            File(context.peerFile, "w").writeln(emptyFileContents);
             writefln("[+] %s created. add peer hashes to it.", context.peerFile);
             stdout.flush();
         }
@@ -371,7 +372,8 @@ auto run(string[] args)
 
             if (!batsignFileExists)
             {
-                File(context.batsignFile, "w").writeln();
+                enum emptyFileContents = "# add batsign URLs here, one per line.";
+                File(context.batsignFile, "w").writeln(emptyFileContents);
                 writefln("[+] %s created. add one or more batsign URLs to it.", context.batsignFile);
                 writeln("    (see https://batsign.me for more information)");
                 stdout.flush();
