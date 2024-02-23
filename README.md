@@ -33,8 +33,8 @@ $ git clone https://github.com/zorael/wg-monitor.git
 -i           --interface  Wireguard interface name
 -p               --peers  Peer list file
 -b             --batsign  Batsign URL file
--c             --command  Custom command to use to send notifications
--t             --timeout  Peer timeout in seconds
+-c             --command  Notification command
+-t             --timeout  Peer handshake timeout in seconds
     --wait-for-interface  Wait for the Wireguard interface to show up
 -l            --language  Notification language, default english
 
@@ -59,7 +59,7 @@ A custom command can be specified to be run instead of sending a batsign when a 
 
 Note that the command will be called by the `wg-monitor` process, and as such by the same user it was started as. This will in all likelihood be **root**, since the program calls itself with `sudo` if it is missing permissions to access the Wireguard interface. This imposes some limitations on what kind of commands can be used without taking extra steps.
 
-A `notify-send.sh` script is included in the repository, which *does* take these extra steps and can be used to send desktop notifications on a Linux system with a graphical environment. It can probably be used as a template for other commands.
+An [`as-gui-user.sh`](as-gui-user.sh) helper shell script is included in the repository, which can be used to run a command as all users currently running a graphical environment. It can as such be used to send desktop notifications, and an additional [`notify-send.sh`](notify-send.sh) script is included that does just that, using the command-line `notify-send` tool. Other notification methods can trivially be added as separate scripts by leveraging [`as-gui-user.sh`](as-gui-user.sh) the same way.
 
 Batsign URLs are not necessary if a custom command is used for notifications.
 
@@ -93,12 +93,7 @@ It is meant to work well with `wg-quick@.service`. If other methods of setting u
 
 ## roadmap
 
-* sendmail support
-* configuration file? would pollute `/etc`
-
-## built with
-
-* [**D**](https://dlang.org)
+* configuration file? would need to be in (and pollute) `/etc`
 
 ## license
 
