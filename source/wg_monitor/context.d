@@ -59,7 +59,7 @@ public:
             How long to wait before repeating a notification, even if there were
             no new peers lost or returned.
          */
-        Duration reportPeriodicity = 6.hours;
+        Duration reminderPeriodicity = 6.hours;
     }
 
     /**

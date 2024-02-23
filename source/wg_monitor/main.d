@@ -190,7 +190,7 @@ void mainLoop(const Context context)
         const shouldReport =
             somethingChanged ||
             (!sortedPeers.allPresent &&
-            ((now - lastReportTimestamp) > context.durations.reportPeriodicity));
+            ((now - lastReportTimestamp) > context.durations.reminderPeriodicity));
 
         if (shouldReport)
         {

@@ -37,7 +37,7 @@ auto handleGetopt(string[] args, out Context context)
 
     int peerTimeout = -1;
     int sleepBetweenChecks = -1;
-    int reportPeriodicity = -1;
+    int reminderPeriodicity = -1;
 
     auto result = std.getopt.getopt(args,
         std.getopt.config.caseSensitive,
@@ -52,20 +52,20 @@ auto handleGetopt(string[] args, out Context context)
             "Batsign URL file",
             &context.batsignFile,
         "c|command",
-            "Custom command to use to send notifications",
+            "Notification command",
             &context.command,
         "cacert",
             string.init, //"Certificate authority bundle file",
             &context.caBundleFile,
         "t|timeout",
-            "Peer timeout in seconds",
+            "Peer handshake timeout in seconds",
             &peerTimeout,
         "s|sleep",
-            "Sleep between peer checks in seconds",
+            "Sleep between peer handshake checks in seconds",
             &sleepBetweenChecks,
-        "r|report",
-            "How long to wait before repeating a notification",
-            &reportPeriodicity,
+        "r|reminder",
+            "Notification reminder period in seconds",
+            &reminderPeriodicity,
         "wait-for-interface",
             "Wait for the Wireguard interface to show up",
             &context.waitForInterface,
@@ -90,7 +90,7 @@ auto handleGetopt(string[] args, out Context context)
 
     if (peerTimeout >= 0) context.durations.peerTimeout = peerTimeout.seconds;
     if (sleepBetweenChecks > 0) context.durations.sleepBetweenChecks = sleepBetweenChecks.seconds;
-    if (reportPeriodicity >= 0) context.durations.reportPeriodicity = reportPeriodicity.seconds;
+    if (reminderPeriodicity >= 0) context.durations.reminderPeriodicity = reminderPeriodicity.seconds;
 
     return result;
 }
