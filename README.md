@@ -55,11 +55,19 @@ The `batsign.url` file should contain one or more [**Batsign**](https://batsign.
 
 ### notification commands
 
-A custom command can be specified to be run instead of sending a batsign when a peer is lost. It will be invoked with the body of the notification as its first argument.
+A custom command can be specified to be run instead of sending a batsign when a peer is lost. It will be invoked with the body of the notification as its first argument, and then four space-separated strings of peer hashes as arguments 2-5.
+
+In order;
+
+1. notification body
+2. peers lost on startup
+3. peers just lost
+4. peers just returned
+5. peers still lost (reminder notification)
 
 Note that the command will be called by the `wg-monitor` process, and as such by the same user it was started as. This will in all likelihood be **root**, since the program calls itself with `sudo` if it is missing permissions to access the Wireguard interface. This imposes some limitations on what kind of commands can be used without taking extra steps.
 
-An [`as-gui-user.sh`](as-gui-user.sh) helper shell script is included in the repository, which can be used to run a command as all users currently running a graphical environment. It can as such be used to send desktop notifications, and an additional [`notify-send.sh`](notify-send.sh) script is included that does just that, using the command-line `notify-send` tool. Other notification methods can trivially be added as separate scripts by leveraging [`as-gui-user.sh`](as-gui-user.sh) the same way.
+To help with this, an [`as-gui-user.sh`](as-gui-user.sh) helper shell script is included in the repository, which can be used to run a command as all users currently running a graphical environment. This makes it possible to send desktop notifications, and an additional [`notify-send.sh`](notify-send.sh) script is included that does just that, using the command-line `notify-send` tool. Other notification methods can trivially be added as separate scripts by leveraging [`as-gui-user.sh`](as-gui-user.sh) the same way.
 
 Batsign URLs are not necessary if a custom command is used for notifications.
 
