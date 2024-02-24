@@ -63,14 +63,16 @@ An [`as-gui-user.sh`](as-gui-user.sh) helper shell script is included in the rep
 
 Batsign URLs are not necessary if a custom command is used for notifications.
 
-### systemd service
+### systemd
 
-The program is preferably run as a systemd service, to have it be automatically restarted upon restoration of power. To facilitate this, a systemd service unit file is provided in the repository. It will have to be copied (or symlinked) into `/etc/systemd/system`, after which you can use `systemctl edit` to create a drop-in file for the service that overrides the `ExecStart` and `WorkingDirectory` directives to point to the actual location of the `wg-monitor` binary. An empty `ExecStart=` must be used to clear the default value, as the `Exec*` directives are additive.
+The program is preferably run as a systemd service, to have it be automatically restarted upon restoration of power. To facilitate this, a service unit file is provided in the repository. It will have to be copied (or symlinked) into `/etc/systemd/system`, after which you can use `systemctl edit` to create a drop-in file for the service that overrides the `ExecStart` directive to point to the actual location of the `wg-monitor` binary.
 
 ```shell
 $ sudo cp wg-monitor@.service /etc/systemd/system
 $ sudo systemctl edit wg-monitor@.service
 ```
+
+An empty `ExecStart=` must be used to clear the default value, as `Exec*` directives are additive. `WorkingDirectory` can be set to any directory where the *already-created* `peers.list` and `batsign.url` files can be read from (by **root**). Please run the program manually once first to create these files, then populate them with the necessary data and optionally move them to a more suitable location.
 
 ```ini
 ### Editing /etc/systemd/system/wg-monitor@.service.d/override.conf
@@ -93,7 +95,7 @@ It is meant to work well with `wg-quick@.service`. If other methods of setting u
 
 ## roadmap
 
-* configuration file? would need to be in (and pollute) `/etc`
+* `/etc/wg-monitor`?
 
 ## license
 
