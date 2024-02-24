@@ -203,21 +203,53 @@ auto sendBatsign(const Context context, const string body_)
 /**
     Runs a custom command to send a notification.
 
+    It will be invoked with the body of the notification as its first argument,
+    and then four space-separated strings of peer hashes as arguments 2-5.
+
+    In order;
+
+    1. notification body
+    2. peers lost on startup
+    3. peers just lost
+    4. peers just returned
+    5. peers still lost (reminder notification)
+
     Params:
         command = The command to run.
         body_ = The body of the notification.
+        sortedPeers = The current state of the Wireguard peers, sorted by connection state.
 
     Returns:
         The Voldemort returned by [std.process.execute].
  */
-auto runCommand(const string executable, const string body_)
+auto runCommand(
+    const string executable,
+    const string body_,
+    const SortedPeers sortedPeers)
 {
+    import wg_monitor.peer : Peer;
     import std.process : execute;
 
-    const string[2] command =
+    static auto concatenate(const Peer[] peers)
+    {
+        import std.algorithm.iteration : map;
+        import std.array : join;
+
+        enum separator = ' ';
+
+        return peers
+            .map!(peer => peer.hash)
+            .join(separator);
+    }
+
+    const string[6] command =
     [
         executable,
         body_,
+        concatenate(sortedPeers.lostOnStartup),
+        concatenate(sortedPeers.justLost),
+        concatenate(sortedPeers.justReturned),
+        concatenate(sortedPeers.stillLost),
     ];
 
     return execute(command[]);
@@ -399,7 +431,7 @@ auto report(
 
     if (context.command.length)
     {
-        const result = runCommand(context.command, body_);
+        const result = runCommand(context.command, body_, sortedPeers);
         const success = (result.status == 0);
 
         if (success)
