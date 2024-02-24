@@ -391,9 +391,9 @@ auto report(
 
     if (context.dryRun)
     {
-        writeln();
+        writeln(' ');
         writeln(body_);
-        writeln();
+        writeln(' ');
         return true;
     }
 
