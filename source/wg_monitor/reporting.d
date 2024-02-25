@@ -446,39 +446,37 @@ auto report(
             writeln(result.output.chomp());
         }
 
-        return success;
+        // If bothNotificationMethods is set, continue to send a batsign too
+        if (!context.bothNotificationMethods) return success;
     }
-    else
+
+    const failures = sendBatsign(context, body_);
+
+    if (!failures.length)
     {
-        const failures = sendBatsign(context, body_);
-
-        if (!failures.length)
-        {
-            writeln("[+] notification post successful");
-            return true;
-        }
-
-        foreach (const failure; failures)
-        {
-            if (failure.exceptionText.length)
-            {
-                writeln("[!] notification post failed: ", failure.exceptionText);
-            }
-            else
-            {
-                writeln("[!] notification post returned status ", failure.code);
-
-                if (failure.code == 404)
-                {
-                    writeln("    (is the URL correct?)");
-                }
-                else
-                {
-                    if (failure.responseBody.length) writeln(failure.responseBody);
-                }
-            }
-        }
-
-        return false;
+        writeln("[+] notification post successful");
+        return true;
     }
+
+    foreach (const failure; failures)
+    {
+        if (failure.exceptionText.length)
+        {
+            writeln("[!] notification post failed: ", failure.exceptionText);
+            continue;
+        }
+
+        writeln("[!] notification post returned status ", failure.code);
+
+        if (failure.code == 404)
+        {
+            writeln("[?] is the URL correct?");
+        }
+        else
+        {
+            if (failure.responseBody.length) writeln(failure.responseBody);
+        }
+    }
+
+    return false;
 }

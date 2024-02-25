@@ -180,4 +180,12 @@ public:
         Whether or not to show the version string and exit immediately.
      */
     bool showVersionAndExit = false;
+
+    /**
+        Whether or not to use both Batsign and the custom command for notifications.
+
+        If this is set, both methods are used. If not, the custom command is
+        used if defined, and Batsign otherwise.
+     */
+    bool bothNotificationMethods = false;
 }

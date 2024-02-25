@@ -290,7 +290,8 @@ auto run(string[] args)
                             "--skip-intro",
                             "--reexec",
                             "--version",
-                            "--cacert");
+                            "--cacert",
+                            "--both");
                 }
 
                 foreach (opt; options)
