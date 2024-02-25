@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Simple helper to run a command as all users that are currently running a
 # graphical environment, with proper DBUS session environment variables set.
