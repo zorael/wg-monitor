@@ -18,16 +18,21 @@ call_as_user()
         "$@"
 }
 
-if [ $# -eq 0 ]; then
+if [[ $# -eq 0 ]]; then
     echo "usage: ${0##*/} [command] [args...]"
     exit 0
 fi
 
-all_displays=( $(ls /tmp/.X11-unix/* | sed 's#/tmp/.X11-unix/X##') )
+all_displays=( $(ls /tmp/.X11-unix/* 2>/dev/null | sed 's#/tmp/.X11-unix/X##') )
+
+if [[ ${#all_displays[@]} -eq 0 ]]; then
+    echo "No graphical environments found."
+    exit 1
+fi
 
 for display_num in ${all_displays[@]}; do
     display=":$display_num"
     user=$(who | grep "($display)" | awk '{ print $1 }' | head -n 1)
-    [ "$user" ] || continue
+    [[ "$user" ]] || continue
     call_as_user $user $display "$@"
 done
