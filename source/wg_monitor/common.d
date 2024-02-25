@@ -36,14 +36,21 @@ enum shortHashLength = 7;
 final class NeedSudoException : Exception
 {
     /**
+        Command that required sudo.
+     */
+    string[] command;
+
+    /**
         Constructor.
      */
     this(
         const string message,
+        const string[] command,
         const string file = __FILE__,
         const size_t line = __LINE__,
-        Throwable nextInChain = null) pure nothrow @nogc @safe
+        Throwable nextInChain = null) pure nothrow /*@nogc*/ @safe
     {
+        this.command = command.dup;
         super(message, file, line, nextInChain);
     }
 }

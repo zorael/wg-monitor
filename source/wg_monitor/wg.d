@@ -60,7 +60,7 @@ auto getRawHandshakeString(const string iface)
         switch (output)
         {
         case sudoError:
-            throw new NeedSudoException(output);
+            throw new NeedSudoException(output, wgCommand[]);
 
         case ifaceError:
             throw new NoSuchInterfaceException(output, iface);
