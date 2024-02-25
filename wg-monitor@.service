@@ -27,8 +27,8 @@ NoNewPrivileges=yes
 PrivateDevices=yes
 DevicePolicy=closed
 LockPersonality=yes
-RestrictAddressFamilies=AF_INET AF_INET6 AF_NETLINK
-CapabilityBoundingSet=~CAP_SETUID CAP_SETGID CAP_SETPCAP
+#RestrictAddressFamilies=AF_INET AF_INET6 AF_NETLINK
+#CapabilityBoundingSet=~CAP_SETUID CAP_SETGID CAP_SETPCAP
 CapabilityBoundingSet=~CAP_SYS_PTRACE CAP_SYS_PACCT
 CapabilityBoundingSet=~CAP_SYS_TTY_CONFIG
 CapabilityBoundingSet=~CAP_SYS_BOOT CAP_SYS_CHROOT
@@ -51,7 +51,6 @@ CapabilityBoundingSet=~CAP_AUDIT_CONTROL CAP_AUDIT_READ CAP_AUDIT_WRITE
 CapabilityBoundingSet=~CAP_MAC_OVERRIDE CAP_MAC_ADMIN
 CapabilityBoundingSet=~CAP_DAC_OVERRIDE CAP_DAC_READ_SEARCH
 SystemCallArchitectures=native
-SystemCallFilter=~@clock @cpu-emulation @debug @keyring @mount @module @obsolete @privileged @reboot @resources
 UMask=0006
 
 [Install]
