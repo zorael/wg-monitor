@@ -466,7 +466,7 @@ auto run(string[] args)
     }
     catch (NeedSudoException e)
     {
-        import std.process : execvp;
+        import std.process : environment, execvp;
 
         if (context.reexecuted)
         {
@@ -480,11 +480,11 @@ auto run(string[] args)
 
         const reexecCommand =
         [
-            "/usr/bin/sudo",
+            environment.get("SUDO", "/usr/bin/sudo"),
             args[0],
             "--skip-intro",
             "--reexec",
-        ]  ~ args[1..$];
+        ] ~ args[1..$];
 
         execvp(reexecCommand[0], reexecCommand);
         assert(0, "exec failed");  // It either execs successfully or throws
