@@ -256,27 +256,24 @@ auto runCommand(
 }
 
 
-public:
-
-
-// report
+// composeNotificationBody
 /**
-    Compiles a report of missing peers and sends a notification via Batsign,
-    or by invoking a custom command (if defined).
-
-    If this is a dry run, the report is printed to the terminal instead.
+    Composes the lines of the notification body, as an array of strings.
+    Use [std.array.join|join] to concatenate them into a single string.
 
     Params:
         context = The context struct.
         sortedPeers = The current state of the Wireguard peers, sorted by connection state.
+
+    Returns:
+        An array of strings, each representing a line in the notification body.
  */
-auto report(
+auto composeNotificationBody(
     const Context context,
     const SortedPeers sortedPeers)
 {
     import wg_monitor.peer : Peer;
-    import std.array : Appender, join;
-    import std.stdio : stdout, writeln;
+    import std.array : Appender;
 
     Appender!(string[]) sink;
     sink.reserve(32);  // number of peers + upward of 7 extra lines
@@ -335,16 +332,6 @@ auto report(
         }
     }
 
-    auto getShortPeerRange(const Peer[] peers)
-    {
-        import wg_monitor.common : shortHashLength;
-        import std.algorithm.iteration : joiner, map;
-
-        return peers
-            .map!(peer => peer.hash[0..shortHashLength])
-            .joiner(", ");
-    }
-
     if (sortedPeers.lostOnStartup.length)
     {
         putMessage(
@@ -354,9 +341,6 @@ auto report(
             sortedPeers.lostOnStartup,
             context.translation.lastSeenPre,
             context.translation.lastSeenPost);
-
-        auto range = getShortPeerRange(sortedPeers.lostOnStartup);
-        writeln("[!] lost on startup: ", range);
     }
 
     if (sortedPeers.justLost.length)
@@ -370,9 +354,6 @@ auto report(
             sortedPeers.justLost,
             context.translation.lastSeenPre,
             context.translation.lastSeenPost);
-
-        auto range = getShortPeerRange(sortedPeers.justLost);
-        writeln("[!] just lost: ", range);
     }
 
     if (sortedPeers.justReturned.length)
@@ -386,9 +367,6 @@ auto report(
             sortedPeers.justReturned,
             context.translation.backPre,
             context.translation.backPost);
-
-        auto range = getShortPeerRange(sortedPeers.justReturned);
-        writeln("[+] just returned: ", range);
     }
 
     if (sortedPeers.stillLost.length)
@@ -402,24 +380,84 @@ auto report(
             sortedPeers.stillLost,
             context.translation.lastSeenPre,
             context.translation.lastSeenPost);
+    }
 
+    if (sortedPeers.allPresent)
+    {
+        /*if (sink.data.length)*/ sink.put(string.init);
+        const message = context.translation.nowHasContactWithAll;
+        sink.put(message);
+    }
+
+    return sink.data;
+}
+
+
+public:
+
+
+// report
+/**
+    Compiles a report of missing peers and sends a notification via Batsign,
+    or by invoking a custom command (if defined).
+
+    If this is a dry run, the report is printed to the terminal instead.
+
+    Params:
+        context = The context struct.
+        sortedPeers = The current state of the Wireguard peers, sorted by connection state.
+ */
+auto report(
+    const Context context,
+    const SortedPeers sortedPeers)
+{
+    import wg_monitor.peer : Peer;
+    import std.array : join;
+    import std.stdio : stdout, writeln;
+
+    static auto getShortPeerRange(const Peer[] peers)
+    {
+        import wg_monitor.common : shortHashLength;
+        import std.algorithm.iteration : joiner, map;
+
+        return peers
+            .map!(peer => peer.hash[0..shortHashLength])
+            .joiner(", ");
+    }
+
+    if (sortedPeers.lostOnStartup.length)
+    {
+        auto range = getShortPeerRange(sortedPeers.lostOnStartup);
+        writeln("[!] lost on startup: ", range);
+    }
+
+    if (sortedPeers.justLost.length)
+    {
+        auto range = getShortPeerRange(sortedPeers.justLost);
+        writeln("[!] just lost: ", range);
+    }
+
+    if (sortedPeers.justReturned.length)
+    {
+        auto range = getShortPeerRange(sortedPeers.justReturned);
+        writeln("[+] just returned: ", range);
+    }
+
+    if (sortedPeers.stillLost.length)
+    {
         auto range = getShortPeerRange(sortedPeers.stillLost);
         writeln("[!] still lost: ", range);
     }
 
     if (sortedPeers.allPresent)
     {
-        /*if (sink.data.length)*/ sink.put(string.init);
-
-        const message = context.translation.nowHasContactWithAll;
-        sink.put(message);
         writeln("[+] all present");
     }
 
     scope(exit) stdout.flush();
-
     stdout.flush();
-    const body_ = sink.data.join('\n');
+
+    const body_ = composeNotificationBody(context, sortedPeers).join('\n');
 
     if (context.dryRun)
     {
@@ -446,7 +484,8 @@ auto report(
             writeln(result.output.chomp());
         }
 
-        // If bothNotificationMethods is set, continue to send a batsign too
+        // If bothNotificationMethods is set, continue to send a batsign too.
+        // Conversely, if it is not set, return here
         if (!context.bothNotificationMethods) return success;
     }
 
