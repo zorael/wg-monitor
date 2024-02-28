@@ -467,17 +467,19 @@ auto report(
         return true;
     }
 
+    bool commandSuccess;
+
     if (context.command.length)
     {
         const result = runCommand(context.command, body_, sortedPeers);
-        const success = (result.status == 0);
+        commandSuccess = (result.status == 0);
 
-        if (success)
+        if (commandSuccess)
         {
             writeln("[+] notification command successful");
             //writeln(result.output.chomp());
         }
-        else if (!success)
+        else /*if (!success)*/
         {
             import std.string : chomp;
             writeln("[!] notification command failed with status ", result.status);
@@ -486,18 +488,20 @@ auto report(
 
         // If bothNotificationMethods is set, continue to send a batsign too.
         // Conversely, if it is not set, return here
-        if (!context.bothNotificationMethods) return success;
+        if (!context.bothNotificationMethods) return commandSuccess;
     }
 
-    const failures = sendBatsign(context, body_);
+    const batsignFailures = sendBatsign(context, body_);
 
-    if (!failures.length)
+    if (!batsignFailures.length)
     {
         writeln("[+] notification post successful");
-        return true;
+        return context.command.length ?
+            commandSuccess :
+            true;
     }
 
-    foreach (const failure; failures)
+    foreach (const failure; batsignFailures)
     {
         if (failure.exceptionText.length)
         {
