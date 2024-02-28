@@ -343,16 +343,30 @@ auto run(string[] args)
         import std.file : exists;
         import std.stdio : File;
 
-        const peerFileExists = context.peerFile.exists;
+        bool peerFileExists;
         bool commandExists;
         bool batsignFileExists;
 
+        peerFileExists = context.peerFile.exists;
+
         if (!peerFileExists)
         {
-            enum emptyFileContents = "# add peer hashes here, one per line.";
-            File(context.peerFile, "w").writeln(emptyFileContents);
-            writefln("[+] %s created. add peer hashes to it.", context.peerFile);
-            stdout.flush();
+            enum etcPeerFile = "/etc/wg-monitor/" ~ Context.init.peerFile;
+            const etcPeerFileExists = etcPeerFile.exists;
+
+            if (etcPeerFileExists)
+            {
+                context.peerFile = etcPeerFile;
+                writeln("[+] using ", etcPeerFile);
+                peerFileExists = true;
+            }
+            else
+            {
+                enum emptyFileContents = "# add peer hashes here, one per line.";
+                File(context.peerFile, "w").writeln(emptyFileContents);
+                writefln("[+] %s created. add peer hashes to it.", context.peerFile);
+                stdout.flush();
+            }
         }
 
         if (context.command.length)
@@ -373,11 +387,23 @@ auto run(string[] args)
 
             if (!batsignFileExists)
             {
-                enum emptyFileContents = "# add batsign URLs here, one per line.";
-                File(context.batsignFile, "w").writeln(emptyFileContents);
-                writefln("[+] %s created. add one or more batsign URLs to it.", context.batsignFile);
-                writeln("    (see https://batsign.me for more information)");
-                stdout.flush();
+                enum etcBatsignFile = "/etc/wg-monitor/" ~ Context.init.batsignFile;
+                const etcBatsignFileExists = etcBatsignFile.exists;
+
+                if (etcBatsignFileExists)
+                {
+                    context.batsignFile = etcBatsignFile;
+                    writeln("[+] using ", etcBatsignFile);
+                    batsignFileExists = true;
+                }
+                else
+                {
+                    enum emptyFileContents = "# add batsign URLs here, one per line.";
+                    File(context.batsignFile, "w").writeln(emptyFileContents);
+                    writefln("[+] %s created. add one or more batsign URLs to it.", context.batsignFile);
+                    writeln("    (see https://batsign.me for more information)");
+                    stdout.flush();
+                }
             }
 
             if (!batsignFileExists) return ShellReturnValue.success;
