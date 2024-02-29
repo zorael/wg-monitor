@@ -287,7 +287,6 @@ auto run(string[] args)
                     return
                         (opt.optShort == "-h") ||
                         opt.optLong.among!(
-                            "--skip-intro",
                             "--reexec",
                             "--version",
                             "--cacert",
@@ -336,7 +335,7 @@ auto run(string[] args)
         return ShellReturnValue.success;
     }
 
-    if (!context.skipIntro) printIntro();
+    if (!context.reexecuted) printIntro();
 
     try
     {
@@ -458,7 +457,7 @@ auto run(string[] args)
             return ShellReturnValue.getoptFailure;
         }
 
-        if (!context.skipIntro)
+        if (!context.reexecuted)
         {
             enum ifacePattern = "interface:           %s";
             writefln(ifacePattern, context.iface);
@@ -508,7 +507,6 @@ auto run(string[] args)
         [
             environment.get("SUDO", "/usr/bin/sudo"),
             args[0],
-            "--skip-intro",
             "--reexec",
         ] ~ args[1..$];
 
