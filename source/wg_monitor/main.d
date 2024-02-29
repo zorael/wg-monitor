@@ -341,6 +341,9 @@ auto run(string[] args)
     {
         import std.file : exists;
         import std.stdio : File;
+        import core.sys.posix.unistd : getuid;
+
+        const userIsRoot = (getuid() == 0);
 
         bool peerFileExists;
         bool commandExists;
@@ -403,12 +406,10 @@ auto run(string[] args)
                     writeln("    (see https://batsign.me for more information)");
                     stdout.flush();
                 }
+
+                stdout.flush();
             }
-
-            if (!batsignFileExists) return ShellReturnValue.success;
         }
-
-        if (!peerFileExists) return ShellReturnValue.success;
 
         const languageFound = context.translation.inherit(context.language);
 
@@ -418,6 +419,14 @@ auto run(string[] args)
             writefln("[!] language '%s' not found", context.language);
             writefln("[+] available languages: %-(%s, %)", allTranslationLanguageNames);
             return ShellReturnValue.invalidLanguage;
+        }
+
+        if (!peerFileExists || (!batsignFileExists && !context.command.length))
+        {
+            // Files missing is an error if the user is root
+            return userIsRoot ?
+                ShellReturnValue.missingFilesRoot :
+                ShellReturnValue.success;
         }
 
         auto peerFileHashes = parsePeerFile(context.peerFile);
