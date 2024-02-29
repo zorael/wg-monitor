@@ -7,7 +7,7 @@ Type=simple
 ExecStart=/path/to/wg-monitor --interface=%i --progress=false --wait-for-interface
 WorkingDirectory=/path/to
 Restart=on-failure
-RestartPreventExitStatus=8 10 11 12 14 31
+RestartPreventExitStatus=8 10 11 12 14 15 31
 RestartSec=10
 
 # Hardening

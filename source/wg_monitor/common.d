@@ -165,4 +165,9 @@ enum ShellReturnValue
         Some other error occurred with regards to permissions.
      */
     otherPermissionsError = 14,
+
+    /**
+        A Batsign and/or peer file was missing, and the user is root.
+     */
+    missingFilesRoot = 15,
 }
