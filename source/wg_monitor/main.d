@@ -359,8 +359,12 @@ auto run(string[] args)
             if (etcPeerFileExists)
             {
                 context.peerFile = etcPeerFile;
-                writeln("[+] using ", etcPeerFile);
                 peerFileExists = true;
+            }
+            else if (userIsRoot)
+            {
+                writeln("[!] missing peer file");
+                writeln("[+] suggested location is ", etcPeerFile);
             }
             else
             {
@@ -395,8 +399,12 @@ auto run(string[] args)
                 if (etcBatsignFileExists)
                 {
                     context.batsignFile = etcBatsignFile;
-                    writeln("[+] using ", etcBatsignFile);
                     batsignFileExists = true;
+                }
+                else if (userIsRoot)
+                {
+                    writeln("[!] missing batsign file");
+                    writeln("[+] suggested location is ", etcBatsignFile);
                 }
                 else
                 {
@@ -404,9 +412,7 @@ auto run(string[] args)
                     File(context.batsignFile, "w").writeln(emptyFileContents);
                     writefln("[+] %s created. add one or more batsign URLs to it.", context.batsignFile);
                     writeln("    (see https://batsign.me for more information)");
-                    stdout.flush();
                 }
-
                 stdout.flush();
             }
         }
@@ -468,6 +474,10 @@ auto run(string[] args)
 
         if (!context.reexecuted)
         {
+            writeln("[+] using ", context.peerFile);
+            writeln("[+] using ", context.batsignFile);
+            writeln(' ');
+
             enum ifacePattern = "interface:           %s";
             writefln(ifacePattern, context.iface);
 
