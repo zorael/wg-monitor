@@ -378,6 +378,7 @@ auto run(string[] args)
         if (context.command.length)
         {
             import std.file : isDir;
+            import std.path : isAbsolute;
 
             commandExists = (context.command.exists && !context.command.isDir);
 
@@ -385,6 +386,12 @@ auto run(string[] args)
             {
                 writefln("[!] notification command '%s' not found", context.command);
                 return ShellReturnValue.commandNotFound;
+            }
+
+            if (!context.command.isAbsolute)
+            {
+                // Workaround to support being passed --command=script.sh
+                context.command = "./" ~ context.command;
             }
         }
         else
