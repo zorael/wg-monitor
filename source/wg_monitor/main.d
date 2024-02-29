@@ -427,7 +427,7 @@ auto run(string[] args)
             return ShellReturnValue.invalidLanguage;
         }
 
-        if (!peerFileExists || (!batsignFileExists && !context.command.length))
+        if (!peerFileExists || (!batsignFileExists && !commandExists))
         {
             // Files missing is an error if the user is root
             return userIsRoot ?
@@ -454,16 +454,26 @@ auto run(string[] args)
             stdout.flush();
         }
 
-        context.batsignURLs = parseBatsignFile(context.batsignFile);
-
-        if (!context.batsignURLs.length)
+        if (context.command.length)
         {
-            writefln("[!] %s is empty. add one or more batsign URLs to it.", context.batsignFile);
-            stdout.flush();
+            // No need to parse batsign file if we're using a custom command
+        }
+        else
+        {
+            context.batsignURLs = parseBatsignFile(context.batsignFile);
+
+            if (!context.batsignURLs.length)
+            {
+                writefln("[!] %s is empty. add one or more batsign URLs to it.", context.batsignFile);
+                stdout.flush();
+            }
         }
 
-        // as above, exit here to have both messages printed
-        if (!context.peerList.length || !context.batsignURLs.length) return ShellReturnValue.missingFiles;
+        // as above, exit here to allow for both messages to be displayed
+        if (!context.peerList.length || (!context.batsignURLs.length && !commandExists))
+        {
+            return ShellReturnValue.emptyFiles;
+        }
 
         if (!context.iface.length)
         {
