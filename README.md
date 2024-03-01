@@ -4,17 +4,17 @@ Monitors other peers in a [Wireguard VPN](https://www.wireguard.com) and sends a
 
 The main purpose of this is to monitor Internet-connected locations for power outages, using Wireguard handshakes as a way for locations to phone home. Each location needs an always-on, always-connected computer to act as a Wireguard peer, for which something like a [Raspberry Pi Zero 2W](https://www.raspberrypi.com/products/raspberry-pi-zero-2-w) is cheap and more than sufficient.
 
-In a hub-and-spoke Wireguard configuration, this should be run on the hub server, ideally with an additional instance on (at least) one other geographically disconnected peer to monitor the hub. In other configurations, it can be run on any peer with visibility of other peers, but a secondary instance monitoring the first is recommended in any setup.
+In a hub-and-spoke Wireguard configuration, this should be run on the hub server, ideally with an additional instance on (at least) one other geographically-disconnected peer to monitor the hub. In other configurations, it can be run on any peer with visibility of other peers, but a secondary instance monitoring the first is recommended in any setup.
 
 Peers must have a `PersistentKeepalive` setting in their Wireguard configuration with a value *lower* than the peer timeout of this program. This is **600 seconds** by default, but can be overridden via a command-line switch.
 
-Notifications are sent as short emails via [**Batsign**](#batsign), or by invocation of a specified command.
+Notifications are sent as short emails via [**Batsign**](#batsign), or by invocation of a supplied command.
 
 **This program is Posix-only until such time a console `wg` tool exists for Windows.**
 
 ## tl;dr
 
-You require a [**D**](https://dlang.org) compiler. The program supports being built with compilers from all three compiler vendors; the reference compiler [**dmd**](https://dlang.org/download.html), the LLVM-based [**ldc**](https://github.com/ldc-developers/ldc#installation), and the GCC-based [**gdc**](https://gdcproject.org). The first is very fast to compile and is always the most recent in terms of compiler development, but the latter two are also available in most package repositories, and have the advantage of being able to compile for non-x86 architectures (e.g. ARM). Generally **ldc** is the go-to choice there. Some version restrictions apply; notably **gdc** requires at least release series **12** to successfully build the program.
+You require a [**D**](https://dlang.org) compiler. The program supports being built with compilers of all three vendors; the reference compiler [**dmd**](https://dlang.org/download.html), the LLVM-based [**ldc**](https://github.com/ldc-developers/ldc#installation), and the GCC-based [**gdc**](https://gdcproject.org). The first is very fast to compile and is always the most recent in terms of compiler development, but the latter two are also available in most package repositories, and have the additional advantage of being able to compile for non-x86 architectures (e.g. ARM). Generally **ldc** is the go-to choice there. Some version restrictions apply; notably for **gdc** your require at least release series **12**.
 
 If no compilers are available from your normal software sources, you can install one using the official [`install.sh`](https://dlang.org/install.html) script. (**gdc** is not available via this method.)
 
@@ -55,7 +55,7 @@ The `batsign.url` file should contain one or more [**Batsign**](https://batsign.
 
 ### notification commands
 
-A custom command can be specified to be run instead of sending a batsign when a peer is lost. It will be invoked with the body of the notification as its first argument, and then four strings of space-separated peer hashes as arguments 2-5.
+A custom command can be supplied to be run instead of sending a batsign when a peer is lost. It will be invoked with the body of the notification as its first argument, and then four strings of space-separated peer hashes as arguments 2-5.
 
 In order;
 
@@ -67,9 +67,7 @@ In order;
 
 Note that the command will be called by the `wg-monitor` process, and as such by the same user it was started as. This will in all likelihood be **root**, since the program calls itself with `sudo` if it is missing permissions to access the Wireguard interface. This imposes some limitations on what kind of commands can be used without taking extra steps.
 
-To help with this, an [`as-gui-user.sh`](as-gui-user.sh) helper shell script is included in the repository, which can be used to run a command as all users currently logged into a graphical environment. This makes it possible to send desktop notifications, and an additional [`notify-send.sh`](notify-send.sh) script is included that does just that, using the command-line `notify-send` tool. `notify-send.sh` must be edited to refer to `as-gui-user.sh` by its full path, or be placed in the same directory as it.
-
-Other notification methods can trivially be added as separate scripts by leveraging `as-gui-user.sh` the same way.
+To help with this, an [`as-gui-user.sh`](as-gui-user.sh) helper shell script is included in the repository, which can be used to run a command as all users currently logged into a graphical environment. This makes it possible to send desktop notifications, and an additional [`notify-send.sh`](notify-send.sh) script is included that does just that, using the command-line `notify-send` tool. Other notification methods can trivially be added as separate scripts by leveraging `as-gui-user.sh` the same way.
 
 Batsign URLs are not necessary if a custom command is used for notifications.
 
@@ -84,7 +82,7 @@ $ sudo systemctl edit wg-monitor@.service
 
 An empty `ExecStart=` must be used to clear the value set in the original file, as `Exec` directives are additive.
 
-The program will look for `peers.list` and `batsign.url` files in `/etc/wg-monitor` if a `WorkingDirectory` is not supplied. Please run the program manually once first to create these files, then populate them with the necessary data and optionally move them to a more suitable location (such as `/etc/wg-monitor`) before attempting to start it as a service.
+The program will look for `peers.list` and `batsign.url` files in `/etc/wg-monitor` if a `WorkingDirectory` is not supplied. Please run the program manually once first to create these files, then populate them with the necessary data and optionally move them to a more suitable location (such as `/etc/wg-monitor`) before attempting to start the service.
 
 If no `WorkingDirectory` is declared, notification commands (such as `notify-send.sh`) must be modified to refer to `as-gui-user.sh` by its full path.
 
