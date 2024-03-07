@@ -111,6 +111,36 @@ final class NetworkException : Exception
 }
 
 
+// CommandNotFoundException
+/**
+    Exception thrown when a `wg` command fails due to the command not being found.
+
+    This is used instead of a normal [object.Exception|Exception] so as not to
+    rely on magic strings to discern the cause of a failure.
+ */
+final class CommandNotFoundException : Exception
+{
+    /**
+        Full command that failed to execute due to `command[0]` not being found.
+     */
+    const string[] command;
+
+    /**
+        Constructor.
+     */
+    this(
+        const string message,
+        const string[] command,
+        const string file = __FILE__,
+        const size_t line = __LINE__,
+        Throwable nextInChain = null) pure nothrow @nogc @safe
+    {
+        this.command = command;
+        super(message, file, line, nextInChain);
+    }
+}
+
+
 // ShellReturnValue
 /**
     Return values for the program.
