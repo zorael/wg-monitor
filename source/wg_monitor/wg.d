@@ -32,48 +32,65 @@ public:
         [NeedSudoException] if `sudo` permissions are needed to execute the command.
         [NoSuchInterfaceException] if the specified interface doesn't exist.
         [NetworkException] on other network errors.
+        [CommandNotFoundException] if the `wg` command wasn't found.
         [object.Exception|Exception] on other more generic errors.
  */
 auto getRawHandshakeString(const string iface)
 {
     import wg_monitor.common : NeedSudoException, NetworkException, NoSuchInterfaceException;
-    import std.process : environment, execute;
+    import std.process : ProcessException, environment, execute;
     import std.string : chomp;
 
+    const executable = environment.get("WG", "/usr/bin/wg");
     const string[4] wgCommand =
     [
-        environment.get("WG", "/usr/bin/wg"),
+        executable,
         "show",
         iface,
         "latest-handshakes",
     ];
 
-    const result = execute(wgCommand[]);
-    const output = result.output.chomp();
-
-    if (result.status != 0)
+    try
     {
-        enum sudoError = "Unable to access interface: Operation not permitted";
-        enum ifaceError = "Unable to access interface: No such device";
-        enum afError = "Unable to access interface: Address family not supported by protocol";
+        const result = execute(wgCommand[]);
+        const output = result.output.chomp();
 
-        switch (output)
+        if (result.status != 0)
         {
-        case sudoError:
-            throw new NeedSudoException(output, wgCommand[]);
+            enum sudoError = "Unable to access interface: Operation not permitted";
+            enum ifaceError = "Unable to access interface: No such device";
+            enum afError = "Unable to access interface: Address family not supported by protocol";
 
-        case ifaceError:
-            throw new NoSuchInterfaceException(output, iface);
+            switch (output)
+            {
+            case sudoError:
+                throw new NeedSudoException(output, wgCommand[]);
 
-        case afError:
-            throw new NetworkException(output);
+            case ifaceError:
+                throw new NoSuchInterfaceException(output, iface);
 
-        default:
-            throw new Exception(output);
+            case afError:
+                throw new NetworkException(output);
+
+            default:
+                throw new Exception(output);
+            }
         }
+
+        return output;
+    }
+    catch (ProcessException e)
+    {
+        import wg_monitor.common : CommandNotFoundException;
+        import std.algorithm.searching : startsWith;
+
+        enum commandNotFoundHead = "Executable file not found:";
+        throw e.msg.startsWith(commandNotFoundHead) ?
+            new CommandNotFoundException(e.msg, wgCommand[].dup) :
+            e;
     }
 
-    return output;
+    // Let other Exceptions pass
 }
 
 

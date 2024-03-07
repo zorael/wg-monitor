@@ -236,7 +236,11 @@ public:
  */
 auto run(string[] args)
 {
-    import wg_monitor.common : NeedSudoException, NetworkException, ShellReturnValue;
+    import wg_monitor.common :
+        CommandNotFoundException,
+        NeedSudoException,
+        NetworkException,
+        ShellReturnValue;
     import wg_monitor.config : handleGetopt, parseBatsignFile, parsePeerFile;
     import std.getopt : GetOptException;
     import std.stdio : stdout, writefln, writeln;
@@ -548,6 +552,24 @@ auto run(string[] args)
 
         execvp(reexecCommand[0], reexecCommand);
         assert(0, "exec failed");  // It either execs successfully or throws
+    }
+    catch (CommandNotFoundException e)
+    {
+        import std.process : environment;
+
+        const wgOverridden = (environment.get("WG", string.init).length > 0);
+
+        writeln("[!] ", e.msg);
+
+        if (wgOverridden)
+        {
+            writeln("[+] /usr/bin/wg is overridden by the WG environment variable");
+        }
+        else
+        {
+            writeln("[?] is wireguard-tools (or equivalent) installed?");
+        }
+        return ShellReturnValue.commandNotFound;
     }
     catch (NetworkException e)
     {
