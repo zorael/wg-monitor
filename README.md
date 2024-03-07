@@ -67,9 +67,9 @@ In order;
 
 Note that the command will be called by the `wg-monitor` process, and as such by the same user it was started as. This will in all likelihood be **root**, since the program calls itself with `sudo` if it is missing permissions to access the Wireguard interface. This imposes some limitations on what kind of commands can be used without taking extra steps.
 
-To help with this, an [`as-gui-user.sh`](as-gui-user.sh) helper shell script is included in the repository, which can be used to run a command as all users currently logged into a graphical environment. This makes it possible to send desktop notifications, and an additional [`notify-send.sh`](notify-send.sh) script is included that does just that, using the command-line `notify-send` tool. Other notification methods can trivially be added as separate scripts by leveraging `as-gui-user.sh` the same way.
+To help with this, an [`as-gui-user.sh`](as-gui-user.sh) helper shell script is included in the repository, which can be used to run a command as all users currently logged into a graphical environment. This makes it possible to send desktop notifications, and an additional [`notify-send.sh`](notify-send.sh) script is included that does just that, using the command-line `notify-send` tool. Other methods of notification can trivially be added as separate scripts leveraging `as-gui-user.sh` the same way.
 
-Batsign URLs are not necessary if a custom command is used for notifications.
+Batsign URLs are not necessary if a command is used for notifications.
 
 ### systemd
 
@@ -79,12 +79,6 @@ The program is preferably run as a systemd service, to have it be automatically 
 $ sudo cp wg-monitor@.service /etc/systemd/system
 $ sudo systemctl edit wg-monitor@.service
 ```
-
-An empty `ExecStart=` must be used to clear the value set in the original file, as `Exec` directives are additive.
-
-The program will look for `peers.list` and `batsign.url` files in `/etc/wg-monitor` if a `WorkingDirectory` is not supplied. Please run the program manually once first to create these files, then populate them with the necessary data and optionally move them to a more suitable location (such as `/etc/wg-monitor`) before attempting to start the service.
-
-If no `WorkingDirectory` is declared, notification commands (such as `notify-send.sh`) must be modified to refer to `as-gui-user.sh` by its full path.
 
 ```ini
 ### Editing /etc/systemd/system/wg-monitor@.service.d/override.conf
@@ -98,6 +92,12 @@ WorkingDirectory=/home/user/src/wg-monitor
 ### Edits below this comment will be discarded
 # [...]
 ```
+
+An empty `ExecStart=` must be used to clear the value set in the original file, as `Exec` directives are additive.
+
+The program will look for `peers.list` and `batsign.url` files in `/etc/wg-monitor` if a `WorkingDirectory` is not supplied. Please run the program manually once first to create these files, then populate them with the necessary data and optionally move them to a more suitable location (such as `/etc/wg-monitor`) before attempting to start the service.
+
+If no `WorkingDirectory` is declared, notification commands (such as `notify-send.sh`) must be modified to refer to `as-gui-user.sh` by its full path.
 
 ```shell
 $ sudo systemctl enable --now wg-monitor@[interface]
