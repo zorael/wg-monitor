@@ -4,11 +4,10 @@
 # graphical environment, with proper DBUS session environment variables set.
 # This is useful for sending desktop notifications and works with notify-send.
 
-call_as_user()
-{
+call_as_user() {
     local user="$1"
     local display="$2"
-    local uid="$(id -u $user)"
+    local uid=$(id -u $user)
     shift 2
 
     /usr/bin/sudo \
