@@ -20,7 +20,6 @@ struct Context
 {
 private:
     import wg_monitor.translation : Translation;
-    import core.time : Duration, hours, minutes, seconds;
 
     /**
         Default language to use for notifications.
@@ -44,6 +43,8 @@ public:
      */
     static struct Durations
     {
+        import core.time : Duration, hours, minutes, seconds;
+
         /**
             A peer is considered lost after this amount of time has passed
             since last successful Wireguard handshake.
