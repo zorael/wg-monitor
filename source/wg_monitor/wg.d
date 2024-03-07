@@ -29,10 +29,10 @@ public:
         The `chomp`ed output of the Wireguard command.
 
     Throws:
-        [NeedSudoException] if `sudo` permissions are needed to execute the command.
-        [NoSuchInterfaceException] if the specified interface doesn't exist.
-        [NetworkException] on other network errors.
-        [CommandNotFoundException] if the `wg` command wasn't found.
+        [wg_monitor.common.NeedSudoException] if `sudo` permissions are needed to execute the command.
+        [wg_monitor.common.NoSuchInterfaceException] if the specified interface doesn't exist.
+        [wg_monitor.common.NetworkException] on other network errors.
+        [wg_monitor.common.CommandNotFoundException] if the `wg` command wasn't found.
         [object.Exception|Exception] on other more generic errors.
  */
 auto getRawHandshakeString(const string iface)
@@ -106,10 +106,7 @@ auto getRawHandshakeString(const string iface)
         iface = The string name of the Wireguard interface.
 
     Throws:
-        [NeedSudoException] if `sudo` permissions are needed to execute the command.
-        [NoSuchInterfaceException] if the specified interface doesn't exist.
-        [NetworkException] on other network errors.
-        [object.Exception|Exception] on other more generic errors.
+        Whatever [getRawHandshakeString] throws.
  */
 void getHandshakes(ref Peer[string] peers, const string iface)
 {

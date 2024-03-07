@@ -72,7 +72,7 @@ public:
 
         See_Also:
             [batsignURLs]
-            [wg_monitor.config.parseBatsignURLs]
+            [wg_monitor.config.parseBatsignFile]
             [wg_monitor.reporting.sendBatsign]
             https://batsign.me
      */
@@ -83,7 +83,7 @@ public:
 
         See_Also:
             [batsignFile]
-            [wg_monitor.config.parseBatsignURLs]
+            [wg_monitor.config.parseBatsignFile]
             [wg_monitor.reporting.sendBatsign]
             https://batsign.me
      */
@@ -95,7 +95,7 @@ public:
         See_Also:
             [wg_monitor.peer.Peer]
             [peerList]
-            [wg_monitorS.config.parsePeerList]
+            [wg_monitor.config.parsePeerFile]
      */
     string peerFile = "peers.list";
 
@@ -146,7 +146,7 @@ public:
         See_Also:
             [wg_monitor.peer.Peer]
             [peerFile]
-            [wg_monitorS.config.parsePeerList]
+            [wg_monitor.config.parsePeerFile]
      */
     bool[string] peerList;
 

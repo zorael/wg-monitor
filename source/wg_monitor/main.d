@@ -232,7 +232,7 @@ public:
         args = Command-line arguments passed to the program.
 
     Returns:
-        A [ShellReturnValue], indicating the program's success or failure.
+        A [wg_monitor.common.ShellReturnValue], indicating the program's success or failure.
  */
 auto run(string[] args)
 {
