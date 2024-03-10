@@ -5,7 +5,7 @@
 
 title="wg-monitor"
 icon="network-wireless-disconnected"
-urgency="normal"
+urgency="critical"
 
 ./as-gui-user.sh \
     /usr/bin/notify-send \
