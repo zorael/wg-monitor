@@ -55,7 +55,7 @@ The `batsign.url` file should contain one or more [**Batsign**](https://batsign.
 
 ### notification commands
 
-A custom command can be supplied to be run instead of sending a batsign when a peer is lost. It will be invoked with the body of the notification as its first argument, and then four strings of space-separated peer hashes as arguments 2-5.
+A custom command can be supplied to be run instead of sending a batsign when a peer is lost. It will be invoked with the body of the notification as its first argument, and then five strings of space-separated peer hashes as arguments 2-6.
 
 In order;
 
@@ -64,6 +64,7 @@ In order;
 3. peers just lost
 4. peers just returned
 5. peers still lost (reminder notification)
+6. peers present
 
 Note that the command will be called by the `wg-monitor` process, and as such by the same user it was started as. This will in all likelihood be **root**, since the program calls itself with `sudo` if it is missing permissions to access the Wireguard interface. This imposes some limitations on what kind of commands can be used without taking extra steps.
 
@@ -73,7 +74,7 @@ Batsign URLs are not necessary if a command is used for notifications.
 
 ### systemd
 
-The program is preferably run as a systemd service, to have it be automatically restarted upon restoration of power. To facilitate this, a service unit file is provided in the repository. It will have to be copied (or symlinked) into `/etc/systemd/system`, after which you can use `systemctl edit` to create a drop-in file for the service that overrides the `ExecStart` directive to point to the actual location of the `wg-monitor` binary.
+The program is preferably run as a systemd service, to have it be automatically restarted upon restoration of power. To facilitate this, a service unit file is provided in the repository. It will have to be copied (or symlinked) into `/etc/systemd/system`, after which you can use `systemctl edit` to create a drop-in file for the service that overrides the `ExecStart` directive to point to the actual location of the `wg-monitor` binary. (The default path is `/usr/local/bin/wg-monitor`.)
 
 ```shell
 $ sudo cp wg-monitor@.service /etc/systemd/system
