@@ -4,7 +4,7 @@ After=network.target wg-quick@%i.service
 
 [Service]
 Type=simple
-ExecStart=/path/to/wg-monitor --interface=%i --progress=false --wait-for-interface
+ExecStart=/usr/local/bin/wg-monitor --interface=%i --progress=false --wait-for-interface
 Restart=on-failure
 RestartPreventExitStatus=8 9 10 11 12 14 15 16 31
 RestartSec=10
