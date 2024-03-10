@@ -4,6 +4,20 @@
 # graphical environment, with proper DBUS session environment variables set.
 # This is useful for sending desktop notifications and works with notify-send.
 
+IFS=
+displays=()
+
+resolve_displays() {
+    local display
+
+    while read display; do
+        [[ "${display:0:2}" = "(:" ]] || continue
+        displays+=( $display )
+    done < <(who | awk '{ print $5 }')
+
+    displays=( $(echo "${displays[@]}" | tr ' ' '\n' | sort -u) )
+}
+
 call_as_user() {
     local user="$1"
     local display="$2"
@@ -17,21 +31,27 @@ call_as_user() {
         "$@"
 }
 
-if [[ $# -eq 0 ]]; then
+call_as_all_users() {
+    local user
+    local display
+
+    for display in ${displays[@]}; do
+        user=$(who | grep "$display" | awk '{ print $1 }' | head --lines=1)
+        [[ "$user" ]] || continue  # should always hold
+        call_as_user $user $display "$@"
+    done
+}
+
+if [[ $# = 0 ]]; then
     echo "usage: ${0##*/} [command] [args...]"
     exit 0
 fi
 
-all_displays=( $(ls /tmp/.X11-unix/* 2>/dev/null | sed 's#/tmp/.X11-unix/X##') )
+resolve_displays
 
-if [[ ${#all_displays[@]} -eq 0 ]]; then
+if [[ ${#displays[@]} = 0 ]]; then
     echo "No graphical environments found."
     exit 1
 fi
 
-for display_num in ${all_displays[@]}; do
-    display=":$display_num"
-    user=$(who | grep "($display)" | awk '{ print $1 }' | head -n 1)
-    [[ "$user" ]] || continue
-    call_as_user $user $display "$@"
-done
+call_as_all_users "$@"
