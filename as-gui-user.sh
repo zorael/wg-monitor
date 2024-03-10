@@ -13,14 +13,12 @@ resolve_displays() {
     while read display; do
         [[ "${display:0:2}" = "(:" ]] || continue
         displays+=( $display )
-    done < <(who | awk '{ print $5 }')
-
-    displays=( $(echo "${displays[@]}" | tr ' ' '\n' | sort -u) )
+    done < <(who | awk '{ print $5 }' | sort -u)
 }
 
 call_as_user() {
     local user="$1"
-    local display="$2"
+    local display="${2:1:-1}"  # slice away the parentheses
     local uid=$(id -u $user)
     shift 2
 
