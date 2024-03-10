@@ -207,7 +207,7 @@ auto sendBatsign(const Context context, const string body_)
     Runs a custom command to send a notification.
 
     It will be invoked with the body of the notification as its first argument,
-    and then four space-separated strings of peer hashes as arguments 2-5.
+    and then five strings of space-separated peer hashes as arguments 2-6.
 
     In order;
 
@@ -216,6 +216,7 @@ auto sendBatsign(const Context context, const string body_)
     3. peers just lost
     4. peers just returned
     5. peers still lost (reminder notification)
+    6. peers present
 
     Params:
         command = The command to run.
@@ -245,7 +246,7 @@ auto runCommand(
             .join(separator);
     }
 
-    const string[6] command =
+    const string[7] command =
     [
         executable,
         body_,
@@ -253,6 +254,7 @@ auto runCommand(
         concatenate(sortedPeers.justLost),
         concatenate(sortedPeers.justReturned),
         concatenate(sortedPeers.stillLost),
+        concatenate(sortedPeers.present),
     ];
 
     return execute(command[]);
