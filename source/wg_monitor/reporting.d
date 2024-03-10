@@ -86,13 +86,10 @@ auto getNameFromHash(const string fullHash, const string phaseDescriptionPattern
             }
         }
     }
-    else if (slice.indexOf('/') != -1)
-    {
-        peerRep.name = slice.advancePast('/');
-    }
     else
     {
-        peerRep.name = slice;
+        import std.typecons : Flag, No, Yes;
+        peerRep.name = slice.advancePast('/', Yes.inherit);
     }
 
     return peerRep;
@@ -118,6 +115,12 @@ unittest
             const peer = getNameFromHash(hash, string.init);
             assert((peer.name == "44AN"), peer.name);
             assert((peer.phase == 1), peer.phase.to!string);
+        }
+        {
+            enum hash = "Nian//A7bVbTv2OVM3jzx2PeHw7EldrkyB8tkz31Oi0=";
+            const peer = getNameFromHash(hash, string.init);
+            assert((peer.name == "Nian"), peer.name);
+            assert(!peer.phase, peer.phase.to!string);
         }
     }
 }
