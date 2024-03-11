@@ -524,9 +524,6 @@ auto run(string[] args)
             enum ifacePattern = "interface:           %s";
             writefln(ifacePattern, context.iface);
 
-            enum peerPattern = "peer file exists:    %s (%d)";
-            writefln(peerPattern, peerFileExists, context.peerList.length);
-
             if (context.command.length)
             {
                 enum commandPattern = "command exists:      %s";
@@ -534,8 +531,15 @@ auto run(string[] args)
             }
             else
             {
-                enum batsignPattern = "batsign file exists: %s (%d)";
-                writefln(batsignPattern, batsignFileExists, context.batsignURLs.length);
+                import lu.string : plurality;
+
+                enum batsignPattern = "batsign file exists: %s (%d %s)";
+
+                writefln(
+                    batsignPattern,
+                    batsignFileExists,
+                    context.batsignURLs.length,
+                    context.batsignURLs.length.plurality("url", "urls"));
 
                 if (context.caBundleFile.length)
                 {
