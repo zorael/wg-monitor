@@ -82,10 +82,12 @@ void mainLoop(const Context context)
 
     // Print message *after* we know permissions are ok.
     enum monitorMessagePattern = "[+] monitoring %d %s, probing every %s.";
+
     const message = monitorMessagePattern.format(
         context.peerList.length,
         context.peerList.length.plurality("peer", "peers"),
         context.durations.sleepBetweenChecks);
+
     writeln(message);
 
     if (context.progress)
@@ -172,6 +174,7 @@ void mainLoop(const Context context)
                 import std.stdio : writefln;
 
                 enum peerReportPattern = "peer:%s | when:%d-%02d-%02d %02d:%02d | diff:%s%s%s";
+
                 writefln(
                     peerReportPattern,
                     peer.hash[0..shortHashLength],
@@ -186,7 +189,6 @@ void mainLoop(const Context context)
         if (context.progress) stdout.flush();
 
         const sortedPeers = SortedPeers(peers);
-
         const shouldReport =
             somethingChanged ||
             (!sortedPeers.allPresent &&
@@ -280,14 +282,13 @@ auto run(string[] args)
                 const Option[] options,
                 const string pattern = "%*s  %*s  %s")
             {
-                import std.algorithm.comparison : max;
-
                 size_t distanceShort;
                 size_t distanceLong;
 
                 static auto shouldSkipFlag(const Option opt)
                 {
                     import std.algorithm.comparison : among;
+
                     return
                         (opt.optShort == "-h") ||
                         opt.optLong.among!(
@@ -297,9 +298,12 @@ auto run(string[] args)
                             "--both");
                 }
 
-                foreach (opt; options)
+                foreach (const opt; options)
                 {
+                    import std.algorithm.comparison : max;
+
                     if (shouldSkipFlag(opt)) continue;
+
                     distanceShort = max(distanceShort, opt.optShort.length);
                     distanceLong = max(distanceLong, opt.optLong.length);
                 }
