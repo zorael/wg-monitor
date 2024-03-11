@@ -343,7 +343,9 @@ auto run(string[] args)
 
     try
     {
+        import std.conv : text;
         import std.file : exists;
+        import std.path : extension;
         import std.stdio : File;
         import core.sys.posix.unistd : getuid;
 
@@ -357,18 +359,26 @@ auto run(string[] args)
 
         if (!peerFileExists)
         {
-            enum etcPeerFile = "/etc/wg-monitor/" ~ Context.init.peerFile;
-            const etcPeerFileExists = etcPeerFile.exists;
+            enum globalEtcPeerFile = "/etc/wg-monitor/" ~ Context.init.peerFile;
+            const etcPeerFile = text(
+                "/etc/wg-monitor/",
+                context.iface,
+                Context.init.peerFile.extension);  // ".list"
 
-            if (etcPeerFileExists)
+            if (etcPeerFile.exists)
             {
                 context.peerFile = etcPeerFile;
+                peerFileExists = true;
+            }
+            else if (globalEtcPeerFile.exists)
+            {
+                context.peerFile = globalEtcPeerFile;
                 peerFileExists = true;
             }
             else if (userIsRoot)
             {
                 writeln("[!] missing peer file");
-                writeln("[+] suggested location is ", etcPeerFile);
+                writeln("[+] suggested location is ", globalEtcPeerFile);
             }
             else
             {
@@ -404,18 +414,26 @@ auto run(string[] args)
 
             if (!batsignFileExists)
             {
-                enum etcBatsignFile = "/etc/wg-monitor/" ~ Context.init.batsignFile;
-                const etcBatsignFileExists = etcBatsignFile.exists;
+                enum globalEtcBatsignFile = "/etc/wg-monitor/" ~ Context.init.batsignFile;
+                const etcBatsignFile = text(
+                    "/etc/wg-monitor/",
+                    context.iface,
+                    Context.init.batsignFile.extension);  // ".url"
 
-                if (etcBatsignFileExists)
+                if (etcBatsignFile.exists)
                 {
                     context.batsignFile = etcBatsignFile;
+                    batsignFileExists = true;
+                }
+                else if (globalEtcBatsignFile.exists)
+                {
+                    context.batsignFile = globalEtcBatsignFile;
                     batsignFileExists = true;
                 }
                 else if (userIsRoot)
                 {
                     writeln("[!] missing batsign file");
-                    writeln("[+] suggested location is ", etcBatsignFile);
+                    writeln("[+] suggested location is ", globalEtcBatsignFile);
                 }
                 else
                 {
