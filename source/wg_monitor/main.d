@@ -223,9 +223,6 @@ void printProgramVersion() @safe
 }
 
 
-public:
-
-
 // run
 /**
     Entrypoint.
@@ -234,7 +231,8 @@ public:
         args = Command-line arguments passed to the program.
 
     Returns:
-        A [wg_monitor.common.ShellReturnValue], indicating the program's success or failure.
+        A [wg_monitor.common.ShellReturnValue|ShellReturnValue], indicating the
+        program's success or failure.
  */
 auto run(string[] args)
 {
@@ -609,4 +607,36 @@ auto run(string[] args)
     }
 
     assert(0, "unreachable");
+}
+
+
+public:
+
+
+// tryRun
+/**
+    Calls [run] in a try-catch, so exceptions thrown that were not internally
+    caught are still printed to the screen.
+
+    Params:
+        args = Command-line arguments passed to the program.
+
+    Returns:
+        A [wg_monitor.common.ShellReturnValue|ShellReturnValue], indicating the
+        program's success or failure, as thrown by [run].
+ */
+auto tryRun(string[] args)
+{
+    try
+    {
+        return run(args);
+    }
+    catch (Exception e)
+    {
+        import wg_monitor.common : ShellReturnValue;
+        import std.stdio : writeln;
+
+        writeln("[!] ", e.msg);
+        return ShellReturnValue.exception;
+    }
 }
