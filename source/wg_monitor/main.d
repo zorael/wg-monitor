@@ -530,34 +530,33 @@ auto run(string[] args)
             writeln("[+] using ", context.batsignFile);
             writeln(' ');
 
-            enum ifacePattern = "interface:           %s";
+            enum ifacePattern = "interface:     %s";
             writefln(ifacePattern, context.iface);
 
             if (context.command.length)
             {
-                enum commandPattern = "command exists:      %s";
-                writefln(commandPattern, commandExists);
+                enum commandPattern = "command:       %s";
+                writefln(commandPattern, context.command);
             }
             else
             {
                 import lu.string : plurality;
 
-                enum batsignPattern = "batsign file exists: %s (%d %s)";
+                enum batsignPattern = "batsigns:      %d %s";
 
                 writefln(
                     batsignPattern,
-                    batsignFileExists,
                     context.batsignURLs.length,
                     context.batsignURLs.length.plurality("url", "urls"));
 
                 if (context.caBundleFile.length)
                 {
-                    // Only print if a CA bundle file was specified
-                    writeln("cacert.pem exists:   ", context.caBundleFile.exists);
+                    // Only print if a CA bundle file was actually specified
+                    writeln("cacert:        ", context.caBundleFile);
                 }
             }
 
-            writeln("language set to:     ", context.language);
+            writeln("language:      ", context.language);
             writeln(' ');
             stdout.flush();
         }
