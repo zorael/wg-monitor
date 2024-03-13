@@ -368,8 +368,16 @@ auto run(string[] args)
                 "/etc/wg-monitor/",
                 context.iface,
                 Context.init.peerFile.extension);  // ".list"
+            const pwdPeerFile = text(
+                context.iface,
+                Context.init.peerFile.extension);  // as above
 
-            if (etcPeerFile.exists)
+            if (pwdPeerFile.exists)
+            {
+                context.peerFile = pwdPeerFile;
+                peerFileExists = true;
+            }
+            else if (etcPeerFile.exists)
             {
                 context.peerFile = etcPeerFile;
                 peerFileExists = true;
@@ -422,8 +430,16 @@ auto run(string[] args)
                     "/etc/wg-monitor/",
                     context.iface,
                     Context.init.batsignFile.extension);  // ".url"
+                const pwdBatsignFile = text(
+                    context.iface,
+                    Context.init.batsignFile.extension);  // as above
 
-                if (etcBatsignFile.exists)
+                if (pwdBatsignFile.exists)
+                {
+                    context.batsignFile = pwdBatsignFile;
+                    batsignFileExists = true;
+                }
+                else if (etcBatsignFile.exists)
                 {
                     context.batsignFile = etcBatsignFile;
                     batsignFileExists = true;
