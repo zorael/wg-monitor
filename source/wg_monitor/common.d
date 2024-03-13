@@ -38,7 +38,7 @@ final class NeedSudoException : Exception
     /**
         Command that required sudo.
      */
-    string[] command;
+    const string[] command;
 
     /**
         Constructor.
@@ -133,9 +133,9 @@ final class CommandNotFoundException : Exception
         const string[] command,
         const string file = __FILE__,
         const size_t line = __LINE__,
-        Throwable nextInChain = null) pure nothrow @nogc @safe
+        Throwable nextInChain = null) pure nothrow @safe
     {
-        this.command = command;
+        this.command = command.dup;
         super(message, file, line, nextInChain);
     }
 }
