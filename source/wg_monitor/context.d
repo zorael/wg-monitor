@@ -157,11 +157,6 @@ public:
     bool progress = true;
 
     /**
-        Whether or not to skip the intro message. Used internally.
-     */
-    bool skipIntro = false;
-
-    /**
         Whether or not to perform a dry run; to not actually send any notifications.
      */
     bool dryRun = false;
