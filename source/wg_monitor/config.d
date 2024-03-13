@@ -284,3 +284,69 @@ auto resolveBatsignFileName(ref Context context)
         return false;
     }
 }
+
+
+// resolveFilename
+/**
+    Resolves the filename of a configuration file.
+
+    The order of precedence is:
+
+    1. The file in the current working directory.
+    2. The file in `/etc/wg-monitor/` for the current Wireguard interface.
+    3. The global file in `/etc/wg-monitor/`.
+
+    Params:
+        filename = Reference to the filename to resolve.
+        iface = The Wireguard interface name.
+        baseFilename = The base filename to resolve.
+
+    Returns:
+        `true` if the file was found; `false` otherwise.
+ */
+auto resolveFilename(
+    ref string filename,
+    const string iface,
+    const string baseFilename)
+{
+    import std.conv : text;
+    import std.file : exists;
+    import std.path : extension;
+
+    if (filename.exists) return true;
+
+    const filenameExtension = baseFilename.extension;
+
+    const globalEtcFile = text(
+        "/etc/wg-monitor/",
+        baseFilename);
+
+    const etcFile = text(
+        "/etc/wg-monitor/",
+        iface,
+        filenameExtension);
+
+    const pwdFile = text(
+        iface,
+        filenameExtension);
+
+    if (pwdFile.exists)
+    {
+        filename = pwdFile;
+        return true;
+    }
+    else if (etcFile.exists)
+    {
+        filename = etcFile;
+        return true;
+    }
+    else if (globalEtcFile.exists)
+    {
+        filename = globalEtcFile;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}

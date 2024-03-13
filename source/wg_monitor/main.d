@@ -347,7 +347,7 @@ auto run(string[] args)
 
     try
     {
-        import wg_monitor.config : resolveBatsignFileName, resolvePeerFileName;
+        import wg_monitor.config : resolveFilename;
         import std.file : exists, isDir;
         import std.stdio : File;
         import core.sys.posix.unistd : getuid;
@@ -356,7 +356,7 @@ auto run(string[] args)
 
         bool commandExists;
         bool batsignFileExists;
-        const peerFileExists = resolvePeerFileName(context);
+        const peerFileExists = resolveFilename(context.peerFile, context.iface, Context.init.peerFile);
 
         if (!peerFileExists)
         {
@@ -395,7 +395,7 @@ auto run(string[] args)
         }
         else /*if (!context.command.length)*/
         {
-            batsignFileExists = resolveBatsignFileName(context);
+            batsignFileExists = resolveFilename(context.batsignFile, context.iface, Context.init.batsignFile);
 
             if (!batsignFileExists)
             {
