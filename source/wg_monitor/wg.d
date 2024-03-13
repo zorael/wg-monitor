@@ -41,10 +41,9 @@ auto getRawHandshakeString(const string iface)
     import std.process : ProcessException, environment, execute;
     import std.string : chomp;
 
-    const executable = environment.get("WG", "/usr/bin/wg");
     const string[4] wgCommand =
     [
-        executable,
+        environment.get("WG", "/usr/bin/wg"),
         "show",
         iface,
         "latest-handshakes",

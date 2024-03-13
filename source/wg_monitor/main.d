@@ -93,9 +93,11 @@ void mainLoop(const Context context)
     if (context.progress)
     {
         import std.range : repeat;
+
         // Only print the separator if we're also printing progress messages.
         enum separatorSign = '=';
-        writeln(separatorSign.repeat(message.length));
+        auto separator = separatorSign.repeat(message.length);
+        writeln(separator);
     }
 
     stdout.flush();
@@ -500,7 +502,7 @@ auto run(string[] args)
         {
             // No need to parse batsign file if we're using a custom command
         }
-        else
+        else /*if (context.batsignFile.length)*/
         {
             context.batsignURLs = parseBatsignFile(context.batsignFile);
 
