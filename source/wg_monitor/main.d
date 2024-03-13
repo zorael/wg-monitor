@@ -347,48 +347,22 @@ auto run(string[] args)
 
     try
     {
-        import std.conv : text;
+        import wg_monitor.config : resolveBatsignFileName, resolvePeerFileName;
         import std.file : exists, isDir;
-        import std.path : extension;
         import std.stdio : File;
         import core.sys.posix.unistd : getuid;
 
         const userIsRoot = (getuid() == 0);
 
-        bool peerFileExists;
         bool commandExists;
         bool batsignFileExists;
-
-        peerFileExists = context.peerFile.exists;
+        const peerFileExists = resolvePeerFileName(context);
 
         if (!peerFileExists)
         {
-            enum globalEtcPeerFile = "/etc/wg-monitor/" ~ Context.init.peerFile;
-            const etcPeerFile = text(
-                "/etc/wg-monitor/",
-                context.iface,
-                Context.init.peerFile.extension);  // ".list"
-            const pwdPeerFile = text(
-                context.iface,
-                Context.init.peerFile.extension);  // as above
-
-            if (pwdPeerFile.exists)
+            if (userIsRoot)
             {
-                context.peerFile = pwdPeerFile;
-                peerFileExists = true;
-            }
-            else if (etcPeerFile.exists)
-            {
-                context.peerFile = etcPeerFile;
-                peerFileExists = true;
-            }
-            else if (globalEtcPeerFile.exists)
-            {
-                context.peerFile = globalEtcPeerFile;
-                peerFileExists = true;
-            }
-            else if (userIsRoot)
-            {
+                enum globalEtcPeerFile = "/etc/wg-monitor/" ~ Context.init.peerFile;
                 writeln("[!] missing peer file");
                 writeln("[+] suggested location is ", globalEtcPeerFile);
             }
@@ -397,8 +371,8 @@ auto run(string[] args)
                 enum emptyFileContents = "# add peer hashes here, one per line.";
                 File(context.peerFile, "w").writeln(emptyFileContents);
                 writefln("[+] %s created. add peer hashes to it.", context.peerFile);
-                stdout.flush();
             }
+            stdout.flush();
         }
 
         if (context.command.length)
@@ -419,38 +393,15 @@ auto run(string[] args)
                 context.command = "./" ~ context.command;
             }
         }
-        else
+        else /*if (!context.command.length)*/
         {
-            batsignFileExists = context.batsignFile.exists;
+            batsignFileExists = resolveBatsignFileName(context);
 
             if (!batsignFileExists)
             {
-                enum globalEtcBatsignFile = "/etc/wg-monitor/" ~ Context.init.batsignFile;
-                const etcBatsignFile = text(
-                    "/etc/wg-monitor/",
-                    context.iface,
-                    Context.init.batsignFile.extension);  // ".url"
-                const pwdBatsignFile = text(
-                    context.iface,
-                    Context.init.batsignFile.extension);  // as above
-
-                if (pwdBatsignFile.exists)
+                if (userIsRoot)
                 {
-                    context.batsignFile = pwdBatsignFile;
-                    batsignFileExists = true;
-                }
-                else if (etcBatsignFile.exists)
-                {
-                    context.batsignFile = etcBatsignFile;
-                    batsignFileExists = true;
-                }
-                else if (globalEtcBatsignFile.exists)
-                {
-                    context.batsignFile = globalEtcBatsignFile;
-                    batsignFileExists = true;
-                }
-                else if (userIsRoot)
-                {
+                    enum globalEtcBatsignFile = "/etc/wg-monitor/" ~ Context.init.batsignFile;
                     writeln("[!] missing batsign file");
                     writeln("[+] suggested location is ", globalEtcBatsignFile);
                 }
