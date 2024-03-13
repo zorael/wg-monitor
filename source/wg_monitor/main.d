@@ -465,7 +465,13 @@ auto run(string[] args)
 
         if (!peerFileExists || (!batsignFileExists && !commandExists))
         {
-            // Files missing is an error if the user is root
+            if (context.command.length && !commandExists)
+            {
+                // Command missing when supplied is always an error
+                return ShellReturnValue.commandNotFound;
+            }
+
+            // Other files missing is an error only if the user is root
             return userIsRoot ?
                 ShellReturnValue.missingFilesRoot :
                 ShellReturnValue.success;
