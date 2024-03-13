@@ -346,7 +346,7 @@ auto run(string[] args)
     try
     {
         import std.conv : text;
-        import std.file : exists;
+        import std.file : exists, isDir;
         import std.path : extension;
         import std.stdio : File;
         import core.sys.posix.unistd : getuid;
@@ -393,7 +393,6 @@ auto run(string[] args)
 
         if (context.command.length)
         {
-            import std.file : isDir;
             import std.path : isAbsolute;
 
             commandExists = (context.command.exists && !context.command.isDir);
@@ -456,6 +455,12 @@ auto run(string[] args)
             writefln("[!] language '%s' not found", context.language);
             writefln("[+] available languages: %-(%s, %)", allTranslationLanguageNames);
             return ShellReturnValue.invalidLanguage;
+        }
+
+        if (context.caBundleFile.length && (!context.caBundleFile.exists || context.caBundleFile.isDir))
+        {
+            writefln("[!] cacert file '%s' not found", context.caBundleFile);
+            return ShellReturnValue.missingFiles;
         }
 
         if (!peerFileExists || (!batsignFileExists && !commandExists))
