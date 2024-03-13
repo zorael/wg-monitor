@@ -47,12 +47,12 @@ public:
 
         /**
             A peer is considered lost after this amount of time has passed
-            since last successful Wireguard handshake.
+            since the last successful Wireguard handshake.
          */
         Duration peerTimeout = 10.minutes;
 
         /**
-            How long to sleep between Wireguard handshake checks.
+            How long to sleep between Wireguard handshake attempts.
          */
         Duration sleepBetweenChecks = 1.minutes;
 
@@ -69,7 +69,7 @@ public:
     string iface;
 
     /**
-        Filename of the Batsign URL file
+        Filename of the Batsign URL file.
 
         See_Also:
             [batsignURLs]
@@ -105,9 +105,8 @@ public:
 
         If this is set, [batsignFile] and [batsignURLs] are ignored.
 
-        The command is expected to take a single string argument, which is the
-        notification message to send. If anything else is required, a shell
-        script or similar should be used.
+        The command will be fed six string arguments. See the `README.md` file
+        for more information.
      */
     string command;
 
@@ -133,7 +132,7 @@ public:
     string language = defaultLanguage;
 
     /**
-        Translation struct for the current language.
+        Translation strings for the current language.
 
         See_Also:
             [wg_monitor.translation.Translation]
@@ -152,7 +151,7 @@ public:
     bool[string] peerList;
 
     /**
-        Whether or not to print progress messages.
+        Whether or not to print verbose progress messages.
      */
     bool progress = true;
 

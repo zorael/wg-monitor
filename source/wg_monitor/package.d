@@ -18,3 +18,8 @@
         [JR](https://github.com/zorael)
  */
 module wg_monitor;
+
+
+/*
+    This file only serves as an adrdox frontpage.
+ */

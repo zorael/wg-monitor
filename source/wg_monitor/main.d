@@ -513,7 +513,7 @@ auto run(string[] args)
             }
         }
 
-        // as above, exit here to allow for both messages to be displayed
+        // As above, exit here to allow for both messages to be displayed
         if (!context.peerList.length || (!context.batsignURLs.length && !commandExists))
         {
             return ShellReturnValue.emptyFiles;
@@ -521,7 +521,7 @@ auto run(string[] args)
 
         if (!context.iface.length)
         {
-            // intro already printed
+            // Intro already printed
             printError("no interface provided");
             return ShellReturnValue.getoptFailure;
         }
