@@ -245,6 +245,7 @@ auto run(string[] args)
         ShellReturnValue;
     import wg_monitor.config : handleGetopt, parseBatsignFile, parsePeerFile;
     import std.getopt : GetOptException;
+    import std.utf : UTFException;
     import std.stdio : stdout, writefln, writeln;
 
     static void printIntro()
@@ -578,6 +579,12 @@ auto run(string[] args)
     {
         writeln("[!] ", e.msg);
         return ShellReturnValue.networkError;
+    }
+    catch (UTFException e)
+    {
+        writeln("[!] failed to parse peer or batsign file");
+        writeln("[?] was a non-text file read?");
+        return ShellReturnValue.badFiles;
     }
     catch (Exception e)
     {
