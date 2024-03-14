@@ -54,29 +54,26 @@ auto getRawHandshakeString(const string iface)
         const result = execute(wgCommand[]);
         const output = result.output.chomp();
 
-        if (result.status != 0)
+        if (result.status == 0) return output;
+
+        enum sudoError = "Unable to access interface: Operation not permitted";
+        enum ifaceError = "Unable to access interface: No such device";
+        enum afError = "Unable to access interface: Address family not supported by protocol";
+
+        switch (output)
         {
-            enum sudoError = "Unable to access interface: Operation not permitted";
-            enum ifaceError = "Unable to access interface: No such device";
-            enum afError = "Unable to access interface: Address family not supported by protocol";
+        case sudoError:
+            throw new NeedSudoException(output, wgCommand[]);
 
-            switch (output)
-            {
-            case sudoError:
-                throw new NeedSudoException(output, wgCommand[]);
+        case ifaceError:
+            throw new NoSuchInterfaceException(output, iface);
 
-            case ifaceError:
-                throw new NoSuchInterfaceException(output, iface);
+        case afError:
+            throw new NetworkException(output);
 
-            case afError:
-                throw new NetworkException(output);
-
-            default:
-                throw new Exception(output);
-            }
+        default:
+            throw new Exception(output);
         }
-
-        return output;
     }
     catch (ProcessException e)
     {
