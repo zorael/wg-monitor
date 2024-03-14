@@ -205,4 +205,9 @@ enum ShellReturnValue
         A Batsign and/or peer file was empty.
      */
     emptyFiles = 16,
+
+    /**
+        A file was read but could not be parsed.
+     */
+    badFiles = 17,
 }
