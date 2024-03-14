@@ -85,7 +85,7 @@ auto getRawHandshakeString(const string iface)
 
         enum commandNotFoundHead = "Executable file not found:";
         throw e.msg.startsWith(commandNotFoundHead) ?
-            new CommandNotFoundException(e.msg, wgCommand[].dup) :
+            new CommandNotFoundException(e.msg, wgCommand[]) :
             e;
     }
 
