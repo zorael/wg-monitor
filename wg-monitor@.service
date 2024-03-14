@@ -6,7 +6,7 @@ After=network.target wg-quick@%i.service
 Type=simple
 ExecStart=/usr/local/bin/wg-monitor --interface=%i --progress=false --wait-for-interface
 Restart=on-failure
-RestartPreventExitStatus=8 9 10 11 12 14 15 16 31
+RestartPreventExitStatus=8 9 10 11 12 14 15 16 17 31
 RestartSec=10
 
 [Install]
