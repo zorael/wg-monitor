@@ -182,22 +182,29 @@ auto parseBatsignFile(const string batsignFile)
 
     The order of precedence is:
 
-    1. The file in the current working directory.
-    2. The file in `/etc/wg-monitor/` for the current Wireguard interface.
-    3. The global file in `/etc/wg-monitor/`.
+    1. The current filename as passed by ref `filename`.
+    2. The file in the current working directory named after the Wireguard interface
+       (e.g. `wg0.list` and `wg0.url` for the `wg0` interface)
+    3. The base file in the current working directory (e.g. `peers.list` and `batsign.url`)
+    4. The file in `/etc/wg-monitor/` named after the Wireguard interface (as above).
+    5. The base file in `/etc/wg-monitor/` (also as above).
+
+    Matching is stopped as soon as a file is found.
 
     Params:
-        filename = Reference to the filename to resolve.
-        iface = The Wireguard interface name.
-        baseFilename = The base filename to resolve.
+        filename = Reference to the filename to resolve. May already have a
+            user-supplied value (via getopt).
+        iface = The name of the Wireguard interface.
+        defaultFilename = The default filename of the file to resolve.
 
     Returns:
-        `true` if the file was found; `false` otherwise.
+        `true` if the file was found and the `filename` paramater was assigned
+        to it; `false` otherwise.
  */
 auto resolveFilename(
     ref string filename,
     const string iface,
-    const string baseFilename)
+    const string defaultFilename)
 {
     import std.conv : text;
     import std.file : exists;
@@ -205,38 +212,39 @@ auto resolveFilename(
 
     if (filename.exists) return true;
 
-    const filenameExtension = baseFilename.extension;
+    const filenameExtension = defaultFilename.extension;
 
-    const globalEtcFile = text(
-        "/etc/wg-monitor/",
-        baseFilename);
+    const cwdIfaceFile = text(
+        iface,
+        filenameExtension);
 
-    const etcFile = text(
+    alias cwdBaseFile = defaultFilename;
+
+    const etcIfaceFile = text(
         "/etc/wg-monitor/",
         iface,
         filenameExtension);
 
-    const pwdFile = text(
-        iface,
-        filenameExtension);
+    const etcBaseFile = text(
+        "/etc/wg-monitor/",
+        defaultFilename);
 
-    if (pwdFile.exists)
+    const string[4] allFilesInOrder =
+    [
+        cwdIfaceFile,
+        cwdBaseFile,
+        etcIfaceFile,
+        etcBaseFile,
+    ];
+
+    foreach (const thisFilename; allFilesInOrder[])
     {
-        filename = pwdFile;
-        return true;
+        if (thisFilename.exists)
+        {
+            filename = thisFilename;
+            return true;
+        }
     }
-    else if (etcFile.exists)
-    {
-        filename = etcFile;
-        return true;
-    }
-    else if (globalEtcFile.exists)
-    {
-        filename = globalEtcFile;
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
