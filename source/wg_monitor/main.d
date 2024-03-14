@@ -12,7 +12,6 @@ module wg_monitor.main;
 private:
 
 import wg_monitor.context : Context;
-import wg_monitor.peer : SortedPeers;
 
 version(Windows)
 {
@@ -30,7 +29,7 @@ version(Windows)
  */
 void mainLoop(const Context context)
 {
-    import wg_monitor.peer : Peer;
+    import wg_monitor.peer : Peer, SortedPeers;
     import wg_monitor.wg : getHandshakes, getRawHandshakeString;
     import wg_monitor.common : NoSuchInterfaceException;
     import lu.string : plurality;
