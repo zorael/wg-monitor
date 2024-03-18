@@ -14,7 +14,7 @@ Notifications are sent as short emails via [**Batsign**](#batsign), or by invoca
 
 ## tl;dr
 
-You require a [**D**](https://dlang.org) compiler. The program supports being built with compilers of all three vendors; the reference compiler [**dmd**](https://dlang.org/download.html), the LLVM-based [**ldc**](https://github.com/ldc-developers/ldc#installation), and the GCC-based [**gdc**](https://gdcproject.org). The first is very fast to compile and is always the most recent in terms of compiler development, but the latter two are also available in most package repositories, and have the additional advantage of being able to compile for non-x86 architectures (e.g. ARM). Generally **ldc** is the go-to choice there. Some version restrictions apply; notably for **gdc** your require at least release series **12**.
+You require a [**D**](https://dlang.org) compiler. The program supports being built with compilers of all three vendors; the reference compiler [**dmd**](https://dlang.org/download.html), the LLVM-based [**ldc**](https://github.com/ldc-developers/ldc#installation), and the GCC-based [**gdc**](https://gdcproject.org). The first is very fast to compile and is always the most recent in terms of compiler development, but the latter two are also available from most package repositories, produce faster code, and have the additional advantage of being able to compile for non-x86 architectures (e.g. ARM). Generally **ldc** is the go-to choice there. Some version restrictions apply; notably for **gdc** your require at least release series **12**.
 
 If no compilers are available from your normal software sources, you can install one using the official [`install.sh`](https://dlang.org/install.html) script. (**gdc** is not available via this method.)
 
@@ -27,7 +27,7 @@ $ dub build
 ## usage
 
 ```
-wireguard monitor v0.0.2 | copyright 2024 jr
+wireguard monitor x.y.z | copyright 2024 jr
 $ git clone https://github.com/zorael/wg-monitor.git
 
 -i           --interface  Wireguard interface name
@@ -41,12 +41,14 @@ $ git clone https://github.com/zorael/wg-monitor.git
 Available languages: english, swedish, japanese, english-minimal
 ```
 
-A `peers.list` and a `batsign.url` file will be created on first run.
+A `peers.list` and a `batsign.url` file will be created on the first run.
+
+### peers
 
 The peer file should contain a list of public keys of Wireguard peers, one per line. These can be obtained from the output of `wg show`.
 
 ```shell
-$ sudo wg show [interface] peers
+$ sudo wg show [interface] peers > peers.list
 ```
 
 ### batsign
@@ -68,7 +70,7 @@ In order;
 
 Note that the command will be called by the `wg-monitor` process, and as such by the same user it was started as. This will in all likelihood be **root**, since the program calls itself with `sudo` if it is missing permissions to access the Wireguard interface. This imposes some limitations on what kind of commands can be used without taking extra steps.
 
-To help with this, an [`as-gui-user.sh`](as-gui-user.sh) helper shell script is included in the repository, which can be used to run a command as all users currently logged into a graphical environment. This makes it possible to send desktop notifications, and an additional [`notify-send.sh`](notify-send.sh) script is included that does just that, using the command-line `notify-send` tool. Other methods of notification can trivially be added as separate scripts leveraging `as-gui-user.sh` the same way.
+To help with this, an [`as-gui-user.sh`](as-gui-user.sh) helper shell script is included in the repository, which can be used to run a command as all users currently logged into a graphical environment. This makes it possible to send desktop notifications, and an additional [`notify-send.sh`](notify-send.sh) script is included that does just that, using the command-line `notify-send` tool. Other methods of notification can probably trivially be added as separate scripts leveraging `as-gui-user.sh` the same way.
 
 Batsign URLs are not necessary if a command is used for notifications.
 
@@ -104,11 +106,11 @@ If no `WorkingDirectory` is declared, notification commands (such as `notify-sen
 $ sudo systemctl enable --now wg-monitor@[interface]
 ```
 
-It is meant to work well with `wg-quick@.service`. If other methods of setting up the Wireguard network are used, the service file may have to be modified accordingly, or skipped altogether.
+It is meant to work well with `wg-quick@.service`. If other methods of setting up the Wireguard network are used, the service file may have to be modified accordingly, or skipped altogether in favour of other solutions.
 
 ## roadmap
 
-* nothing planned, ideas needed
+* nothing planned
 
 ## license
 
