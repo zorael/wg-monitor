@@ -34,7 +34,7 @@ call_as_all_users() {
     local display
 
     for display in ${displays[@]}; do
-        user=$(who | grep "$display" | awk '{ print $1 }' | head --lines=1)
+        user=$(who | grep -G "$display" | awk '{ print $1 }' | head -n1)
         [[ "$user" ]] || continue  # should always hold
         call_as_user $user $display "$@"
     done
