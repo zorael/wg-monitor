@@ -74,27 +74,15 @@ struct Translation
 
     /**
         Translation for the string used along with a timestamp when a peer was
-        last seen. Inserted before the timestamp.
+        last seen. Should contain `$timestamp` in some fashion.
      */
-    string lastSeenPre = "lastSeenPre";
-
-    /**
-        Translation for the string used along with a timestamp when a peer was
-        last seen. Inserted after the timestamp.
-     */
-    string lastSeenPost = "lastSeenPost";
+    string lastSeen = "lastSeen";
 
     /**
         Translation for the string used along with a timestamp when a peer has
-        returned. Inserted before the timestamp.
+        returned. Should contain `$timestamp` in some fashion.
      */
-    string backPre = "backPre";
-
-    /**
-        Translation for the string used along with a timestamp when a peer has
-        returned. Inserted after the timestamp.
-     */
-    string backPost = "backPost";
+    string back = "back";
 
     /**
         Translation for the string used when all peers are present.

@@ -306,16 +306,17 @@ auto composeNotificationBody(
 
     void putPeerTable(
         const Peer[] peers,
-        const string wordingPreTimestamp,
-        const string wordingPostTimestamp)
+        const string wording)
     {
+        import std.array : replace;
         import std.format : format;
 
         foreach (const peer; peers)
         {
+            enum pattern = "    %s, %s";
+
             if (peer.timestamp.toUnixTime == 0)
             {
-                enum pattern = "    %s, %s";
                 const line = pattern.format(
                     getNameFromHash(peer.hash, context.translation.phaseDescription),
                     context.translation.notSeenSinceRestart);
@@ -323,15 +324,12 @@ auto composeNotificationBody(
             }
             else
             {
-                enum pattern = "    %s, %s%s%d-%02d-%02d %02d:%02d%s%s";
+                const timestamp = "%d-%02d-%02d %02d:%02d".format(
+                    peer.timestamp.year, cast(uint)peer.timestamp.month, peer.timestamp.day,
+                    peer.timestamp.hour, peer.timestamp.minute);
                 const line = pattern.format(
                     getNameFromHash(peer.hash, context.translation.phaseDescription),
-                    wordingPreTimestamp,
-                    wordingPreTimestamp.length ? " " : string.init,
-                    peer.timestamp.year, cast(uint)peer.timestamp.month, peer.timestamp.day,
-                    peer.timestamp.hour, peer.timestamp.minute,
-                    wordingPostTimestamp.length ? " " : string.init,
-                    wordingPostTimestamp);
+                    wording.replace("$timestamp", timestamp));
                 sink.put(line);
             }
         }
@@ -344,8 +342,7 @@ auto composeNotificationBody(
             sortedPeers.lostOnStartup.length);
         putPeerTable(
             sortedPeers.lostOnStartup,
-            context.translation.lastSeenPre,
-            context.translation.lastSeenPost);
+            context.translation.lastSeen);
     }
 
     if (sortedPeers.justLost.length)
@@ -357,8 +354,7 @@ auto composeNotificationBody(
             sortedPeers.justLost.length);
         putPeerTable(
             sortedPeers.justLost,
-            context.translation.lastSeenPre,
-            context.translation.lastSeenPost);
+            context.translation.lastSeen);
     }
 
     if (sortedPeers.justReturned.length)
@@ -370,8 +366,7 @@ auto composeNotificationBody(
             sortedPeers.justReturned.length);
         putPeerTable(
             sortedPeers.justReturned,
-            context.translation.backPre,
-            context.translation.backPost);
+            context.translation.back);
     }
 
     if (sortedPeers.stillLost.length)
@@ -383,8 +378,7 @@ auto composeNotificationBody(
             sortedPeers.stillLost.length);
         putPeerTable(
             sortedPeers.stillLost,
-            context.translation.lastSeenPre,
-            context.translation.lastSeenPost);
+            context.translation.lastSeen);
     }
 
     if (sortedPeers.allPresent)
