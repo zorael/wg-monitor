@@ -57,16 +57,15 @@ The `batsign.url` file should contain one or more [**Batsign**](https://batsign.
 
 ### notification commands
 
-A custom command can be supplied to be run instead of sending a batsign when a peer is lost. It will be invoked with the body of the notification as its first argument, and then five strings of space-separated peer hashes as arguments 2-6.
+A custom command can be supplied to be run instead of sending a batsign when a peer is lost. It will be invoked with the body of the notification as its first argument, and then four strings of space-separated peer hashes as arguments 2-5.
 
 In order;
 
 1. notification body
-2. peers lost on startup
-3. peers just lost
-4. peers just returned
-5. peers still lost (reminder notification)
-6. peers present
+2. peers just lost
+3. peers just returned
+4. peers still lost (reminder notification)
+5. peers present
 
 Note that the command will be called by the `wg-monitor` process, and as such by the same user it was started as. This will in all likelihood be **root**, since the program calls itself with `sudo` if it is missing permissions to access the Wireguard interface. This imposes some limitations on what kind of commands can be used without taking extra steps.
 
