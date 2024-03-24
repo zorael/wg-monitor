@@ -79,6 +79,11 @@ public:
     SysTime timestamp;
 
     /**
+        Whether or not the peer has never been seen before.
+     */
+    bool wasNeverSeen;
+
+    /**
         Constructor.
 
         Params:
