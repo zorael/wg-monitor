@@ -191,7 +191,7 @@ void mainLoop(const Context context)
                     peer.timestamp.hour, peer.timestamp.minute,
                     delta,
                     timedOut ? " (!)" : string.init,
-                    thisChanged ? " (NEW)" : string.init);
+                    thisChanged ? " (UPDATED)" : string.init);
             }
         }
 
