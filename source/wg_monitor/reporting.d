@@ -207,16 +207,15 @@ auto sendBatsign(const Context context, const string body_)
     Runs a custom command to send a notification.
 
     It will be invoked with the body of the notification as its first argument,
-    and then five strings of space-separated peer hashes as arguments 2-6.
+    and then five strings of space-separated peer hashes as arguments 2-5.
 
     In order;
 
     1. notification body
-    2. peers lost on startup
-    3. peers just lost
-    4. peers just returned
-    5. peers still lost (reminder notification)
-    6. peers present
+    2. peers just lost
+    3. peers just returned
+    4. peers still lost (reminder notification)
+    5. peers present
 
     Params:
         command = The command to run.
@@ -246,11 +245,10 @@ auto runCommand(
             .join(separator);
     }
 
-    const string[7] command =
+    const string[6] command =
     [
         executable,
         body_,
-        concatenate(sortedPeers.lostOnStartup),
         concatenate(sortedPeers.justLost),
         concatenate(sortedPeers.justReturned),
         concatenate(sortedPeers.stillLost),
@@ -335,20 +333,8 @@ auto composeNotificationBody(
         }
     }
 
-    if (sortedPeers.lostOnStartup.length)
-    {
-        putMessage(
-            context.translation.powerBackAndContactLostWith,
-            sortedPeers.lostOnStartup.length);
-        putPeerTable(
-            sortedPeers.lostOnStartup,
-            context.translation.lastSeen);
-    }
-
     if (sortedPeers.justLost.length)
     {
-        //if (sink.data.length) sink.put(string.init);
-
         putMessage(
             context.translation.justLostContactWith,
             sortedPeers.justLost.length);
@@ -422,12 +408,6 @@ auto report(
         return peers
             .map!(peer => peer.hash[0..shortHashLength])
             .joiner(", ");
-    }
-
-    if (sortedPeers.lostOnStartup.length)
-    {
-        auto range = getShortPeerRange(sortedPeers.lostOnStartup);
-        writeln("[!] lost on startup: ", range);
     }
 
     if (sortedPeers.justLost.length)

@@ -55,12 +55,6 @@ public:
             below it last cycle.
          */
         justLost,
-
-        /**
-            The program was just (re)started and the peer has a handshake whose
-            timestamp is *above* the timeout.
-         */
-        lostOnStartup,
     }
 
     /**
@@ -126,11 +120,6 @@ struct SortedPeers
     Peer[] justLost;
 
     /**
-        All peers that were lost at program start.
-     */
-    Peer[] lostOnStartup;
-
-    /**
         Whether or not all peers are present, including those that just returned.
 
         Returns:
@@ -140,10 +129,9 @@ struct SortedPeers
     {
         return
             //this.present.length &&
-            !this.stillLost.length &&
             //!this.justReturned.length &&
-            !this.justLost.length &&
-            !this.lostOnStartup.length;
+            !this.stillLost.length &&
+            !this.justLost.length;
     }
 
     /**
@@ -177,10 +165,6 @@ struct SortedPeers
                 this.justLost ~= peer;
                 break;
 
-            case Peer.State.lostOnStartup:
-                this.lostOnStartup ~= peer;
-                break;
-
             case Peer.State.unset:
                 // Not in the peer list, ignore
                 break;
@@ -193,7 +177,6 @@ struct SortedPeers
         if (this.justReturned.length) this.justReturned = this.justReturned.sort!pred.release();
         if (this.stillLost.length) this.stillLost = this.stillLost.sort!pred.release();
         if (this.justLost.length) this.justLost = this.justLost.sort!pred.release();
-        if (this.lostOnStartup.length) this.lostOnStartup = this.lostOnStartup.sort!pred.release();
     }
 }
 
@@ -231,14 +214,13 @@ auto step(
             break;
 
         case justLost:
-        case lostOnStartup:
             // Became lost last cycle, still lost
             peer.state = stillLost;
             break;
 
         case unset:
             // Program startup
-            peer.state = lostOnStartup;
+            peer.state = stillLost;
             return true;
         }
     }
@@ -254,7 +236,6 @@ auto step(
 
         case stillLost:
         case justLost:
-        case lostOnStartup:  // Program startup
             // Was lost, now present
             peer.state = justReturned;
             return true;
@@ -281,7 +262,7 @@ unittest
 
     changed = peer.step(true);
     assert(changed);
-    assert((peer.state == Peer.State.lostOnStartup), enumToString(peer.state));
+    assert((peer.state == Peer.State.stillLost), enumToString(peer.state));
 
     changed = peer.step(true);
     assert(!changed);
