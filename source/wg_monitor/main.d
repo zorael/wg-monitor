@@ -183,7 +183,7 @@ void mainLoop(const Context context)
 
                 enum peerReportPattern = "peer:%s | when:%d-%02d-%02d %02d:%02d | diff:%s%s%s";
                 const deltaString = peer.wasNeverSeen ?
-                    "-" :
+                    "yet to be seen" :
                     delta.toString();
 
                 writefln(
