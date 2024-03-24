@@ -183,13 +183,16 @@ void mainLoop(const Context context)
                 import std.stdio : writefln;
 
                 enum peerReportPattern = "peer:%s | when:%d-%02d-%02d %02d:%02d | diff:%s%s%s";
+                const deltaString = peer.wasNeverSeen ?
+                    "-" :
+                    delta.toString();
 
                 writefln(
                     peerReportPattern,
                     peer.hash[0..shortHashLength],
                     peer.timestamp.year, cast(uint)peer.timestamp.month, peer.timestamp.day,
                     peer.timestamp.hour, peer.timestamp.minute,
-                    delta,
+                    deltaString,
                     timedOut ? " (!)" : string.init,
                     thisChanged ? " (UPDATED)" : string.init);
             }
