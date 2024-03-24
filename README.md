@@ -53,7 +53,7 @@ $ sudo wg show [interface] peers > peers.list
 
 ### batsign
 
-The `batsign.url` file should contain one or more [**Batsign**](https://batsign.me) URLs. Batsign is a free service with which you can send brief emails to yourself by issuing simple HTTP requests. Requires registration.
+The `batsign.url` file should contain one or more [**Batsign**](https://batsign.me) URLs. Batsign is a free (gratis) service with which you can send brief emails to yourself by issuing simple HTTP requests. Requires registration.
 
 ### notification commands
 
@@ -67,9 +67,9 @@ In order;
 4. peers still lost (reminder notification)
 5. peers present
 
-Note that the command will be called by the `wg-monitor` process, and as such by the same user it was started as. This will in all likelihood be **root**, since the program calls itself with `sudo` if it is missing permissions to access the Wireguard interface. This imposes some limitations on what kind of commands can be used without taking extra steps.
+Note that the command will be called by the `wg-monitor` process, and as such by the same user it was started as. This will in all likelihood be **root**, since the program calls itself with `sudo` if it is missing permissions to access the Wireguard interface. This imposes some limitations on what kind of commands can be used without environment variable gymnastics.
 
-To help with this, an [`as-gui-user.sh`](as-gui-user.sh) helper shell script is included in the repository, which can be used to run a command as all users currently logged into a graphical environment. This makes it possible to send desktop notifications, and an additional [`notify-send.sh`](notify-send.sh) script is included that does just that, using the command-line `notify-send` tool. Other methods of notification can probably trivially be added as separate scripts leveraging `as-gui-user.sh` the same way.
+To help with this, an [`as-gui-user.sh`](as-gui-user.sh) helper shell script is included in the repository, which can be used to run a command on all currently-running graphical environment displays. This makes it possible to send desktop notifications, and an additional [`notify-send.sh`](notify-send.sh) script is included that does just that, using the command-line `notify-send` tool. Other methods of notification that can be similarly triggered by running a command can probably trivially be added as separate scripts leveraging `as-gui-user.sh` the same way.
 
 Batsign URLs are not necessary if a command is used for notifications.
 
