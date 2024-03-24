@@ -33,7 +33,7 @@ void mainLoop(const Context context)
     import wg_monitor.wg : getHandshakes, getRawHandshakeString;
     import wg_monitor.common : NoSuchInterfaceException;
     import lu.string : plurality;
-    import std.datetime.systime : SysTime;
+    import std.datetime.systime : Clock, SysTime;
     import std.format : format;
     import std.stdio : stdout, writeln;
 
@@ -103,10 +103,10 @@ void mainLoop(const Context context)
 
     Peer[string] peers;
     SysTime lastReportTimestamp;
+    const loopStart = Clock.currTime;
 
     while (true)
     {
-        import std.datetime.systime : Clock;
         import core.thread : Thread;
         import core.time : Duration;
 
@@ -158,11 +158,18 @@ void mainLoop(const Context context)
         now.fracSecs = Duration.zero;
         bool somethingChanged;
 
+        peerStepLoop:
         foreach (ref peer; peers)
         {
             import wg_monitor.peer : step;
 
-            if (peer.hash !in context.peerList) continue;
+            if (peer.hash !in context.peerList) continue peerStepLoop;
+
+            if (peer.wasNeverSeen)
+            {
+                // Peer has not yet been seen. Set the timestamp to the loop start
+                peer.timestamp = loopStart;
+            }
 
             const delta = (now - peer.timestamp);
             const timedOut = (delta > context.durations.peerTimeout);

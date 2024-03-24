@@ -315,7 +315,7 @@ auto composeNotificationBody(
         {
             enum pattern = "    %s, %s";
 
-            if (peer.timestamp.toUnixTime == 0)
+            if (peer.wasNeverSeen)
             {
                 const line = pattern.format(
                     getNameFromHash(peer.hash, context.translation.phaseDescription),

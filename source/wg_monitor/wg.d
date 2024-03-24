@@ -119,7 +119,7 @@ void getHandshakes(ref Peer[string] peers, const string iface)
         import std.string : indexOf;
 
         const tabPos = line.indexOf('\t');
-        if (tabPos == -1) continue;
+        if (tabPos == -1) continue;  // why?
 
         const hash = line[0..tabPos];
         auto peer = hash in peers;
@@ -130,6 +130,18 @@ void getHandshakes(ref Peer[string] peers, const string iface)
             peer = hash in peers;
         }
 
-        peer.timestamp = SysTime.fromUnixTime(line[tabPos+1..$].to!long);
+        const timeString = line[tabPos+1..$];
+        if (!timeString.length) continue;  // when?
+
+        if (timeString[0] == '0')
+        {
+            peer.wasNeverSeen = true;
+            continue;
+        }
+        else
+        {
+            peer.wasNeverSeen = false;
+            peer.timestamp = SysTime.fromUnixTime(timeString.to!long);
+        }
     }
 }
