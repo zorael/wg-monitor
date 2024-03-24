@@ -36,6 +36,7 @@ void mainLoop(const Context context)
     import std.datetime.systime : Clock, SysTime;
     import std.format : format;
     import std.stdio : stdout, writeln;
+    import core.time : Duration;
 
     try
     {
@@ -103,12 +104,12 @@ void mainLoop(const Context context)
 
     Peer[string] peers;
     SysTime lastReportTimestamp;
-    const loopStart = Clock.currTime;
+    auto loopStart = Clock.currTime;
+    loopStart.fracSecs = Duration.zero;
 
     while (true)
     {
         import core.thread : Thread;
-        import core.time : Duration;
 
         scope(success) Thread.sleep(context.durations.sleepBetweenChecks);
 
