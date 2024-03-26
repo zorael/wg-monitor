@@ -258,7 +258,6 @@ auto run(string[] args)
         ShellReturnValue;
     import wg_monitor.config : handleGetopt, parseBatsignFile, parsePeerFile;
     import std.getopt : GetOptException;
-    import std.socket : Socket;
     import std.stdio : stdout, writefln, writeln;
     import std.utf : UTFException;
 
@@ -283,7 +282,6 @@ auto run(string[] args)
     scope(exit) stdout.flush();
 
     Context context;
-    context.hostname = Socket.hostName;  // set it before getopt
 
     try
     {

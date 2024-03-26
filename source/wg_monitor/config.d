@@ -32,8 +32,11 @@ public:
  */
 auto handleGetopt(string[] args, out Context context)
 {
+    import std.socket : Socket;
     import core.time : seconds;
     static import std.getopt;
+
+    context.hostname = Socket.hostName;
 
     int peerTimeout = -1;
     int sleepBetweenChecks = -1;
@@ -55,7 +58,7 @@ auto handleGetopt(string[] args, out Context context)
             "Notification command",
             &context.command,
         "hostname",
-            "Hostname to use in notifications",
+            "Hostname to use in notifications, default '" ~ context.hostname ~ '\'',
             &context.hostname,
         "both",
             string.init,  //"Use both notification methods (Batsign and command)",
