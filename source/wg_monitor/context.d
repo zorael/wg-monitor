@@ -151,6 +151,11 @@ public:
     bool[string] peerList;
 
     /**
+        Hostname to use in notifications.
+     */
+    string hostname; // = Socket.hostName;  // must naturally be set at runtime
+
+    /**
         Whether or not to print verbose progress messages.
      */
     bool progress = true;
