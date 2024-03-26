@@ -213,7 +213,7 @@ auto sendBatsign(const Context context, const string body_)
     In order;
 
     1. notification body
-    2. main loop iteration number (decimal)
+    2. main loop iteration number (integer)
     3. peers just lost
     4. peers just returned
     5. peers still lost (reminder notification)
