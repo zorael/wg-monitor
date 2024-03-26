@@ -228,13 +228,16 @@ void mainLoop(const Context context)
  */
 void printProgramVersion() @safe
 {
-    import wg_monitor.semver : WgMonitorSemVer;
+    import wg_monitor.semver : WgMonitorSemVer, WgMonitorSemVerPreRelease;
     import std.stdio : writefln, writeln;
 
     enum sourceURL = "https://github.com/zorael/wg-monitor";
 
     alias v = WgMonitorSemVer;
-    writefln("wireguard monitor v%d.%d.%d | copyright 2024 jr", v.major, v.minor, v.patch);
+    alias vPre = WgMonitorSemVerPreRelease;
+    enum pre = vPre.length ? "-" ~ vPre : string.init;
+
+    writefln("wireguard monitor v%d.%d.%d%s | copyright 2024 jr", v.major, v.minor, v.patch, pre);
     writeln("$ git clone " ~ sourceURL ~ ".git");
 }
 
