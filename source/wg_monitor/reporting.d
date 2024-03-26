@@ -267,13 +267,15 @@ auto runCommand(
     Params:
         context = The context struct.
         sortedPeers = The current state of the Wireguard peers, sorted by connection state.
+        justStarted = Whether or not the program was just started.
 
     Returns:
         An array of strings, each representing a line in the notification body.
  */
 auto composeNotificationBody(
     const Context context,
-    const SortedPeers sortedPeers)
+    const SortedPeers sortedPeers,
+    const bool justStarted)
 {
     import wg_monitor.peer : Peer;
     import std.array : Appender;
@@ -333,8 +335,20 @@ auto composeNotificationBody(
         }
     }
 
+    if (justStarted)
+    {
+        import std.socket : Socket;
+        import std.array : replace;
+
+        const message = context.translation.powerRestored
+            .replace("$hostname", context.hostname);
+        sink.put(message);
+    }
+
     if (sortedPeers.justLost.length)
     {
+        if (sink.data.length) sink.put(string.init);
+
         putMessage(
             context.translation.justLostContactWith,
             sortedPeers.justLost.length);
@@ -391,10 +405,12 @@ public:
     Params:
         context = The context struct.
         sortedPeers = The current state of the Wireguard peers, sorted by connection state.
+        justStarted = Whether or not the program was just started.
  */
 auto report(
     const Context context,
-    const SortedPeers sortedPeers)
+    const SortedPeers sortedPeers,
+    const bool justStarted)
 {
     import wg_monitor.peer : Peer;
     import std.array : join;
@@ -436,7 +452,7 @@ auto report(
     scope(exit) stdout.flush();
     stdout.flush();
 
-    const body_ = composeNotificationBody(context, sortedPeers).join('\n');
+    const body_ = composeNotificationBody(context, sortedPeers, justStarted).join('\n');
 
     if (context.dryRun)
     {

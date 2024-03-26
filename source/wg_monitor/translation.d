@@ -43,10 +43,9 @@ struct Translation
     string phaseDescription = "phaseDescription";
 
     /**
-        Translation for the string used when power has been restored but there
-        were peers lost.
+        Translation for the string used when power has been restored.
      */
-    string powerBackAndContactLostWith = "powerBackAndContactLostWith";
+    string powerRestored = "powerRestored";
 
     /**
         Translation for the string used when contact was just lost with a number

@@ -104,6 +104,7 @@ void mainLoop(const Context context)
     Peer[string] peers;
     SysTime lastReportTimestamp;
     const loopStart = Clock.currTime;
+    uint i;
 
     while (true)
     {
@@ -157,6 +158,7 @@ void mainLoop(const Context context)
         auto now = Clock.currTime;
         now.fracSecs = Duration.zero;
         bool somethingChanged;
+        ++i;
 
         peerStepLoop:
         foreach (ref peer; peers)
@@ -200,15 +202,17 @@ void mainLoop(const Context context)
         if (context.progress) stdout.flush();
 
         const sortedPeers = SortedPeers(peers);
+        const justStarted = (i == 1);
         const shouldReport =
             somethingChanged ||
+            justStarted ||
             (!sortedPeers.allPresent &&
             ((now - lastReportTimestamp) > context.durations.reminderPeriodicity));
 
         if (shouldReport)
         {
             import wg_monitor.reporting : report;
-            const success = report(context, sortedPeers);
+            const success = report(context, sortedPeers, justStarted);
             if (success) lastReportTimestamp = now;
         }
     }
