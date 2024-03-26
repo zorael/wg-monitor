@@ -6,9 +6,9 @@ The main purpose of this is to monitor Internet-connected locations for power ou
 
 In a hub-and-spoke Wireguard configuration, this should be run on the hub server, ideally with an additional instance on (at least) one other geographically-disconnected peer to monitor the hub. In other configurations, it can be run on any peer with visibility of other peers, but a secondary instance monitoring the first is recommended in any setup.
 
-Peers must have a `PersistentKeepalive` setting in their Wireguard configuration with a value *lower* than the peer timeout of this program. This is **600 seconds** by default, but can be overridden via a command-line switch.
+Peers must have a `PersistentKeepalive` setting in their Wireguard configuration with a value *comfortably lower* than the peer timeout of this program. This timeout is **600 seconds** by default, but can be overridden via a command-line switch.
 
-Notifications are sent as short emails via [**Batsign**](#batsign), or by invocation of a supplied command.
+Notifications are sent as short emails via [**Batsign**](#batsign), or by invocation of an external command.
 
 **This program is Posix-only until such time a console `wg` tool exists for Windows.**
 
@@ -57,17 +57,18 @@ The `batsign.url` file should contain one or more [**Batsign**](https://batsign.
 
 ### notification commands
 
-A custom command can be supplied to be run instead of sending a batsign when a peer is lost. It will be invoked with the body of the notification as its first argument, and then four strings of space-separated peer hashes as arguments 2-5.
+An external command can be supplied to be run instead of sending a batsign when a peer is lost. It will be invoked with the body of the notification as its first argument, the number of iterations the main loop has run (starting from 0) as its second, and then four strings of space-separated peer hashes as arguments 3-6.
 
 In order;
 
 1. notification body
-2. peers just lost
-3. peers just returned
-4. peers still lost (reminder notification)
-5. peers present
+2. main loop iteration number (integer)
+3. peers just lost
+4. peers just returned
+5. peers still lost (reminder notification)
+6. peers present
 
-Note that the command will be called by the `wg-monitor` process, and as such by the same user it was started as. This will in all likelihood be **root**, since the program calls itself with `sudo` if it is missing permissions to access the Wireguard interface. This imposes some limitations on what kind of commands can be used without environment variable gymnastics.
+Note that the command will be called by the `wg-monitor` process, and as such by the same user that was started as. This will in all likelihood be **root**, since the program calls itself with `sudo` if it is missing permissions to access the Wireguard interface. This imposes some limitations on what kind of commands can be used without environment variable gymnastics.
 
 To help with this, an [`as-gui-user.sh`](as-gui-user.sh) helper shell script is included in the repository, which can be used to run a command on all currently-running graphical environment displays. This makes it possible to send desktop notifications, and an additional [`notify-send.sh`](notify-send.sh) script is included that does just that, using the command-line `notify-send` tool. Other methods of notification that can be similarly triggered by running a command can probably trivially be added as separate scripts leveraging `as-gui-user.sh` the same way.
 
@@ -75,7 +76,7 @@ Batsign URLs are not necessary if a command is used for notifications.
 
 ### systemd
 
-The program is preferably run as a systemd service, to have it be automatically restarted upon restoration of power. To facilitate this, a service unit file is provided in the repository. It will have to be copied (or symlinked) into `/etc/systemd/system`, after which you can use `systemctl edit` to create a drop-in file for the service that overrides the `ExecStart` directive to point to the actual location of the `wg-monitor` binary. (The default path is `/usr/local/bin/wg-monitor`.)
+The program is preferably run as a **systemd** service, to have it be automatically restarted upon restoration of power. To facilitate this, a service unit file is provided in the repository. It will have to be copied (or symlinked) into `/etc/systemd/system`, after which you can use `systemctl edit` to create a drop-in file for the service that overrides the `ExecStart` directive to point to the actual location of the `wg-monitor` binary. (The default path is `/usr/local/bin/wg-monitor`.)
 
 ```shell
 $ sudo cp wg-monitor@.service /etc/systemd/system
@@ -99,7 +100,7 @@ An empty `ExecStart=` must be used to clear the value set in the original file, 
 
 The program will look for `peers.list` and `batsign.url` files in `/etc/wg-monitor` if a `WorkingDirectory` is not supplied. Please run the program manually once first to create these files, then populate them with the necessary data and optionally move them to a more suitable location (such as `/etc/wg-monitor`) before attempting to start the service.
 
-If no `WorkingDirectory` is declared, notification commands (such as `notify-send.sh`) must be modified to refer to `as-gui-user.sh` by its full path.
+If no `WorkingDirectory` is declared, external notification commands that make use of `as-gui-user.sh` (such as `notify-send.sh`) must be modified to refer to it by its full path.
 
 ```shell
 $ sudo systemctl enable --now wg-monitor@[interface]
@@ -109,7 +110,7 @@ It is meant to work well with `wg-quick@.service`. If other methods of setting u
 
 ## roadmap
 
-* nothing planned
+* nothing planned. fairly feature-complete. ideas welcome.
 
 ## license
 
