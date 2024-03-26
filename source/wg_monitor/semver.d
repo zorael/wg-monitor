@@ -21,7 +21,7 @@ enum WgMonitorSemVer
     /**
         SemVer major version of the program.
      */
-    major = 0,
+    major = 1,
 
     /**
         SemVer minor version of the program.
@@ -31,7 +31,7 @@ enum WgMonitorSemVer
     /**
         SemVer patch version of the program.
      */
-    patch = 2,
+    patch = 0,
 }
 
 
@@ -39,4 +39,4 @@ enum WgMonitorSemVer
 /**
     SemVer pre-release string of this build.
  */
-enum WgMonitorSemVerPreRelease = string.init;
+enum WgMonitorSemVerPreRelease = "beta.1";
