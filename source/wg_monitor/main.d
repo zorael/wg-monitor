@@ -482,7 +482,7 @@ auto run(string[] args)
 
         if (context.command.length)
         {
-            // No need to parse batsign file if we're using a custom command
+            // No need to parse batsign file if we're using an external command
         }
         else /*if (context.batsignFile.length)*/
         {

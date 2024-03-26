@@ -101,7 +101,7 @@ public:
     string peerFile = "peers.list";
 
     /**
-        Custom command to run to send notifications, instead of using Batsign.
+        External command to run to send notifications, instead of using Batsign.
 
         If this is set, [batsignFile] and [batsignURLs] are ignored.
 
@@ -182,9 +182,9 @@ public:
     bool showVersionAndExit = false;
 
     /**
-        Whether or not to use both Batsign and the custom command for notifications.
+        Whether or not to use both Batsign *and* the external command for notifications.
 
-        If this is set, both methods are used. If not, the custom command is
+        If this is set, both methods are used. If not, the external command is
         used if defined, and Batsign otherwise.
      */
     bool bothNotificationMethods = false;

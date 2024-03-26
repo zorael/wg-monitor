@@ -204,7 +204,7 @@ auto sendBatsign(const Context context, const string body_)
 
 // runCommand
 /**
-    Runs a custom command to send a notification.
+    Runs an external command to send a notification.
 
     It will be invoked with the body of the notification as its first argument,
     the number of iterations the main loop has run (starting from 0) as its second,
@@ -404,7 +404,7 @@ public:
 // report
 /**
     Compiles a report of missing peers and sends a notification via Batsign,
-    or by invoking a custom command (if defined).
+    or by invoking an external command (if defined).
 
     If this is a dry run, the report is printed to the terminal instead.
 

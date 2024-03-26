@@ -6,7 +6,7 @@
     A notification is sent if a peer hasn't been seen for a while, occassionally
     as a reminder, and/or if a peer returns after having been lost.
     Notifications can be sent via [Batsign](https://batsign.me), or by invoking
-    a custom command.
+    an external command.
 
     See_Also:
         https://batsign.me
@@ -18,7 +18,6 @@
         [JR](https://github.com/zorael)
  */
 module wg_monitor;
-
 
 /*
     This file only serves as an adrdox frontpage.
