@@ -33,3 +33,10 @@ enum WgMonitorSemVer
      */
     patch = 2,
 }
+
+
+// WgMonitorSemVerPreRelease
+/**
+    SemVer pre-release string of this build.
+ */
+enum WgMonitorSemVerPreRelease = string.init;
