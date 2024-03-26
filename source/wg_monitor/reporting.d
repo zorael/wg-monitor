@@ -343,18 +343,15 @@ auto composeNotificationBody(
 
     if (loopIteration == 0)
     {
-        import std.socket : Socket;
         import std.array : replace;
-
         const message = context.translation.powerRestored
             .replace("$hostname", context.hostname);
         sink.put(message);
+        return sink.data;
     }
 
     if (sortedPeers.justLost.length)
     {
-        if (sink.data.length) sink.put(string.init);
-
         putMessage(
             context.translation.justLostContactWith,
             sortedPeers.justLost.length);
