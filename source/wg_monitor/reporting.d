@@ -207,19 +207,22 @@ auto sendBatsign(const Context context, const string body_)
     Runs a custom command to send a notification.
 
     It will be invoked with the body of the notification as its first argument,
-    and then five strings of space-separated peer hashes as arguments 2-5.
+    the number of iterations the main loop has run (starting from 0) as its second,
+    and then four strings of space-separated peer hashes as arguments 3-6.
 
     In order;
 
     1. notification body
-    2. peers just lost
-    3. peers just returned
-    4. peers still lost (reminder notification)
-    5. peers present
+    2. main loop iteration number (decimal)
+    3. peers just lost
+    4. peers just returned
+    5. peers still lost (reminder notification)
+    6. peers present
 
     Params:
         command = The command to run.
         body_ = The body of the notification.
+        loopIteration = The current loop iteration (counter).
         sortedPeers = The current state of the Wireguard peers, sorted by connection state.
 
     Returns:
@@ -228,9 +231,11 @@ auto sendBatsign(const Context context, const string body_)
 auto runCommand(
     const string executable,
     const string body_,
+    const size_t loopIteration,
     const SortedPeers sortedPeers)
 {
     import wg_monitor.peer : Peer;
+    import std.conv : to;
     import std.process : execute;
 
     static auto concatenate(const Peer[] peers)
@@ -245,10 +250,11 @@ auto runCommand(
             .join(separator);
     }
 
-    const string[6] command =
+    const string[7] command =
     [
         executable,
         body_,
+        loopIteration.to!string,
         concatenate(sortedPeers.justLost),
         concatenate(sortedPeers.justReturned),
         concatenate(sortedPeers.stillLost),
@@ -267,7 +273,7 @@ auto runCommand(
     Params:
         context = The context struct.
         sortedPeers = The current state of the Wireguard peers, sorted by connection state.
-        justStarted = Whether or not the program was just started.
+        loopIteration = The current loop iteration (counter).
 
     Returns:
         An array of strings, each representing a line in the notification body.
@@ -275,7 +281,7 @@ auto runCommand(
 auto composeNotificationBody(
     const Context context,
     const SortedPeers sortedPeers,
-    const bool justStarted)
+    const size_t loopIteration)
 {
     import wg_monitor.peer : Peer;
     import std.array : Appender;
@@ -335,7 +341,7 @@ auto composeNotificationBody(
         }
     }
 
-    if (justStarted)
+    if (loopIteration == 0)
     {
         import std.socket : Socket;
         import std.array : replace;
@@ -405,12 +411,12 @@ public:
     Params:
         context = The context struct.
         sortedPeers = The current state of the Wireguard peers, sorted by connection state.
-        justStarted = Whether or not the program was just started.
+        loopIteration = The current loop iteration (counter).
  */
 auto report(
     const Context context,
     const SortedPeers sortedPeers,
-    const bool justStarted)
+    const size_t loopIteration)
 {
     import wg_monitor.peer : Peer;
     import std.array : join;
@@ -452,7 +458,7 @@ auto report(
     scope(exit) stdout.flush();
     stdout.flush();
 
-    const body_ = composeNotificationBody(context, sortedPeers, justStarted).join('\n');
+    const body_ = composeNotificationBody(context, sortedPeers, loopIteration).join('\n');
 
     if (context.dryRun)
     {
@@ -466,7 +472,7 @@ auto report(
 
     if (context.command.length)
     {
-        const result = runCommand(context.command, body_, sortedPeers);
+        const result = runCommand(context.command, body_, loopIteration, sortedPeers);
         commandSuccess = (result.status == 0);
 
         if (commandSuccess)
