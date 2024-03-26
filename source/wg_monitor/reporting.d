@@ -343,14 +343,17 @@ auto composeNotificationBody(
 
     if (loopIteration == 0)
     {
-        import std.array : replace;
-        const message = context.translation.powerRestored
-            .replace("$hostname", context.hostname);
-        sink.put(message);
+        if (context.translation.powerRestored.length)
+        {
+            import std.array : replace;
+            const message = context.translation.powerRestored
+                .replace("$hostname", context.hostname);
+            sink.put(message);
+        }
         return sink.data;
     }
 
-    if (sortedPeers.justLost.length)
+    if (sortedPeers.justLost.length && context.translation.justLostContactWith.length)
     {
         putMessage(
             context.translation.justLostContactWith,
@@ -360,7 +363,7 @@ auto composeNotificationBody(
             context.translation.lastSeen);
     }
 
-    if (sortedPeers.justReturned.length)
+    if (sortedPeers.justReturned.length && context.translation.justRegainedContactWith.length)
     {
         if (sink.data.length) sink.put(string.init);
 
@@ -372,7 +375,7 @@ auto composeNotificationBody(
             context.translation.back);
     }
 
-    if (sortedPeers.stillLost.length)
+    if (sortedPeers.stillLost.length && context.translation.stillMissingContactWith.length)
     {
         if (sink.data.length) sink.put(string.init);
 
@@ -384,7 +387,7 @@ auto composeNotificationBody(
             context.translation.lastSeen);
     }
 
-    if (sortedPeers.allPresent)
+    if (sortedPeers.allPresent && context.translation.nowHasContactWithAll)
     {
         /*if (sink.data.length)*/ sink.put(string.init);
         const message = context.translation.nowHasContactWithAll;
@@ -459,9 +462,12 @@ auto report(
 
     if (context.dryRun)
     {
-        writeln(' ');
-        writeln(body_);
-        writeln(' ');
+        if (body_.length)
+        {
+            writeln(' ');
+            writeln(body_);
+            writeln(' ');
+        }
         return true;
     }
 
