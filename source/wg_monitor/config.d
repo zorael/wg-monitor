@@ -25,7 +25,7 @@ public:
 
     Params:
         args = Command line arguments passed to the program.
-        context = out-reference to a [Context] struct.
+        context = out-reference to a [wg_monitor.context.Context|Context] struct.
 
     Returns:
         The results of [std.getopt.getopt|getopt].
@@ -111,7 +111,7 @@ auto handleGetopt(string[] args, out Context context)
         peerFile = Path to the peer list file.
 
     Returns:
-        A Voldemort `Result` struct.
+        A Voldemort result struct.
  */
 auto parsePeerFile(const string peerFile)
 {

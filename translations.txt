@@ -1,3 +1,5 @@
+# Language definitions go here.
+
 language=english
 peerSingular=peer
 peerPlural=peers

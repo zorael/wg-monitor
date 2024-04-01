@@ -22,7 +22,7 @@ private:
     import wg_monitor.translation : Translation;
 
     /**
-        Default language to use for notifications.
+        Default language to use in notifications.
 
         This is the language used if no language is specified with the `-l` flag.
         Must be one of the languages in
@@ -101,7 +101,7 @@ public:
     string peerFile = "peers.list";
 
     /**
-        External command to run to send notifications, instead of using Batsign.
+        External command with which to send notifications, instead of sending batsigns.
 
         If this is set, [batsignFile] and [batsignURLs] are ignored.
 
