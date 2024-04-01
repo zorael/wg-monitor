@@ -11,7 +11,9 @@ module wg_monitor.main;
 
 private:
 
+import wg_monitor.common : ShellReturnValue;
 import wg_monitor.context : Context;
+import wg_monitor.cout;
 
 version(Windows)
 {
@@ -35,7 +37,7 @@ void mainLoop(const Context context)
     import lu.string : plurality;
     import std.datetime.systime : Clock, SysTime;
     import std.format : format;
-    import std.stdio : stdout, writeln;
+    import std.stdio : stdout;
 
     try
     {
@@ -47,9 +49,8 @@ void mainLoop(const Context context)
     {
         if (!context.waitForInterface) throw e;
 
-        writeln("[!] ", e.msg);
-        writeln("[+] waiting for interface to show up");
-        stdout.flush();
+        printError(e.msg);
+        printInfo("waiting for interface to show up");
 
         waitLoop:
         while (true)
@@ -60,7 +61,7 @@ void mainLoop(const Context context)
                 getRawHandshakeString(context.iface);
 
                 // If we're here, it didn't throw
-                writeln("[+] interface found");
+                printInfo("interface found");
                 break waitLoop;
             }
             catch (NoSuchInterfaceException _)
@@ -76,30 +77,29 @@ void mainLoop(const Context context)
 
     if (context.dryRun)
     {
-        writeln("[+] dry run: not sending notifications");
+        printInfo("dry run: not sending notifications");
     }
 
     // Print message *after* we know permissions are ok.
-    enum monitorMessagePattern = "[+] monitoring %d %s, probing every %s.";
-
-    const message = monitorMessagePattern.format(
+    enum monitorMessagePattern = "monitoring %d %s, probing every %s.";
+    const monitorMessage = monitorMessagePattern.format(
         context.peerList.length,
         context.peerList.length.plurality("peer", "peers"),
         context.durations.sleepBetweenChecks);
 
-    writeln(message);
+    printInfo(monitorMessage);
 
     if (context.progress)
     {
         import std.range : repeat;
+        import std.stdio : writeln;
 
         // Only print the separator if we're also printing progress messages.
         enum separatorSign = '=';
-        auto separator = separatorSign.repeat(message.length);
+        auto separator = separatorSign.repeat(monitorMessage.length + 4);  // account for "[+] "
         writeln(separator);
+        stdout.flush();
     }
-
-    stdout.flush();
 
     Peer[string] peers;
     SysTime lastReportTimestamp;
@@ -119,11 +119,8 @@ void mainLoop(const Context context)
         }
         catch (NoSuchInterfaceException e)
         {
-            import std.stdio : stdout, writeln;
-
-            writeln("[!] ", e.msg);
-            writeln("[+] waiting for interface to return");
-            stdout.flush();
+            printError(e.msg);
+            printInfo("waiting for interface to return");
 
             inner:
             while (true)
@@ -134,7 +131,7 @@ void mainLoop(const Context context)
                     getHandshakes(peers, context.iface);
 
                     // If we're here, it didn't throw
-                    writeln("[+] interface found");
+                    printInfo("interface found");
                     break inner;
                 }
                 catch (NoSuchInterfaceException _)
@@ -150,8 +147,7 @@ void mainLoop(const Context context)
         }
         catch (Exception e)
         {
-            writeln("[!] ", e.msg);
-            stdout.flush();
+            printError(e.msg);
             continue;
         }
 
@@ -184,13 +180,13 @@ void mainLoop(const Context context)
                 import wg_monitor.common : shortHashLength;
                 import std.stdio : writefln;
 
-                enum peerReportPattern = "peer:%s | when:%d-%02d-%02d %02d:%02d | diff:%s%s%s";
+                enum pattern = "peer:%s | when:%d-%02d-%02d %02d:%02d | diff:%s%s%s";
                 const deltaString = peer.wasNeverSeen ?
                     "unknown" :
                     delta.toString();
 
                 writefln(
-                    peerReportPattern,
+                    pattern,
                     peer.hash[0..shortHashLength],
                     peer.timestamp.year, cast(uint)peer.timestamp.month, peer.timestamp.day,
                     peer.timestamp.hour, peer.timestamp.minute,
@@ -263,25 +259,6 @@ auto run(string[] args)
     import wg_monitor.config : handleGetopt, parseBatsignFile, parsePeerFile;
     import std.getopt : GetOptException;
     import std.stdio : stdout, writefln, writeln;
-    import std.utf : UTFException;
-
-    static void printIntro()
-    {
-        printProgramVersion();
-        writeln(' ');
-    }
-
-    static void printError(const string message)
-    {
-        writeln("[!] ", message);
-        writeln("[+] see --help for more information");
-    }
-
-    static void printIntroError(const string message)
-    {
-        printIntro();
-        printError(message);
-    }
 
     scope(exit) stdout.flush();
 
@@ -342,8 +319,9 @@ auto run(string[] args)
 
             enum languagePattern = "Available languages: %-(%s, %)";
 
-            printIntro();
-            customGetoptPrinter(getoptResults.options);
+            printProgramVersion();
+            writeln(' ');
+            printGetoptHelpScreen(getoptResults.options);
             writeln(' ');
             writefln(languagePattern, allTranslationLanguageNames);
             return ShellReturnValue.success;
@@ -351,14 +329,18 @@ auto run(string[] args)
     }
     catch (GetOptException e)
     {
-        printIntroError(e.msg);
-        return ShellReturnValue.getoptFailure;
+        printProgramVersion();
+        writeln(' ');
+        printError(e.msg);
+        printGetoptInfo();
+        retval = ShellReturnValue.getoptFailure;
+        return true;
     }
 
     if (context.showVersionAndExit)
     {
         printProgramVersion();
-        return ShellReturnValue.success;
+        writeln(' ');
     }
 
     if (!context.reexecuted) printIntro();
@@ -381,16 +363,15 @@ auto run(string[] args)
             if (userIsRoot)
             {
                 enum globalEtcPeerFile = "/etc/wg-monitor/" ~ Context.init.peerFile;
-                writeln("[!] missing peer file");
-                writeln("[+] suggested location is ", globalEtcPeerFile);
+                printError("missing peer file");
+                printInfo("suggested location is ", globalEtcPeerFile);
             }
             else
             {
                 enum emptyFileContents = "# add peer hashes here, one per line.";
                 File(context.peerFile, "w").writeln(emptyFileContents);
-                writefln("[+] %s created. add peer hashes to it.", context.peerFile);
+                printInfo(context.peerFile, " created. add peer hashes to it.");
             }
-            stdout.flush();
         }
 
         if (context.command.length)
@@ -401,7 +382,11 @@ auto run(string[] args)
 
             if (!commandExists)
             {
-                writefln("[!] notification command '%s' not found", context.command);
+                import std.format : format;
+
+                enum pattern = "notification command '%s' not found";
+                const message = pattern.format(context.command);
+                printError(message);
                 return ShellReturnValue.commandNotFound;
             }
 
@@ -420,17 +405,16 @@ auto run(string[] args)
                 if (userIsRoot)
                 {
                     enum globalEtcBatsignFile = "/etc/wg-monitor/" ~ Context.init.batsignFile;
-                    writeln("[!] missing batsign file");
-                    writeln("[+] suggested location is ", globalEtcBatsignFile);
+                    printError("missing batsign file");
+                    printInfo("suggested location is ", globalEtcBatsignFile);
                 }
                 else
                 {
                     enum emptyFileContents = "# add batsign URLs here, one per line.";
                     File(context.batsignFile, "w").writeln(emptyFileContents);
-                    writefln("[+] %s created. add one or more batsign URLs to it.", context.batsignFile);
-                    writeln("    (see https://batsign.me for more information)");
+                    printInfo(context.batsignFile, " created. add one or more batsign URLs to it.");
+                    printIndented("(see https://batsign.me for more information)");
                 }
-                stdout.flush();
             }
         }
 
@@ -439,14 +423,24 @@ auto run(string[] args)
         if (!languageFound)
         {
             import wg_monitor.translation : allTranslationLanguageNames;
-            writefln("[!] language '%s' not found", context.language);
-            writefln("[+] available languages: %-(%s, %)", allTranslationLanguageNames);
+            import std.format : format;
+
+            enum notFoundPattern = "language '%s' not found";
+            enum availablePattern = "available languages: %-(%s, %)";
+            const notFoundMessage = notFoundPattern.format(context.language);
+            const availableMessage = availablePattern.format(allTranslationLanguageNames);
+            printError(notFoundMessage);
+            printInfo(availableMessage);
             return ShellReturnValue.invalidLanguage;
         }
 
         if (context.caBundleFile.length && (!context.caBundleFile.exists || context.caBundleFile.isDir))
         {
-            writefln("[!] cacert file '%s' not found", context.caBundleFile);
+            import std.format : format;
+
+            enum notFoundPattern = "cacert file '%s' not found";
+            const notFoundMessage = notFoundPattern.format(context.caBundleFile);
+            printError(notFoundMessage);
             return ShellReturnValue.missingFiles;
         }
 
@@ -470,17 +464,15 @@ auto run(string[] args)
         {
             foreach (hash; peerFileHashes.invalid)
             {
-                writeln("[!] invalid hash ignored: ", hash);
+                printError("invalid hash ignored: ", hash);
             }
-            stdout.flush();
         }
 
         context.peerList = peerFileHashes.valid;
 
         if (!context.peerList.length)
         {
-            writefln("[!] %s is empty. add peer hashes to it.", context.peerFile);
-            stdout.flush();
+            printError(context.peerFile, " is empty. add peer hashes to it.");
         }
 
         if (context.command.length)
@@ -493,8 +485,7 @@ auto run(string[] args)
 
             if (!context.batsignURLs.length)
             {
-                writefln("[!] %s is empty. add one or more batsign URLs to it.", context.batsignFile);
-                stdout.flush();
+                printError(context.batsignFile, " is empty. add one or more batsign URLs to it.");
             }
         }
 
@@ -508,13 +499,14 @@ auto run(string[] args)
         {
             // Intro already printed
             printError("no interface provided");
+            printGetoptInfo();
             return ShellReturnValue.getoptFailure;
         }
 
         if (!context.reexecuted)
         {
-            writeln("[+] using ", context.peerFile);
-            writeln("[+] using ", context.batsignFile);
+            printInfo("using ", context.peerFile);
+            printInfo("using ", context.batsignFile);
             writeln(' ');
 
             enum ifacePattern = "interface:     %s";
@@ -529,8 +521,7 @@ auto run(string[] args)
             {
                 import lu.string : plurality;
 
-                enum batsignPattern = "batsigns:      %d %s";
-
+                enum batsignPattern = "batsign:       %d %s";
                 writefln(
                     batsignPattern,
                     context.batsignURLs.length,
@@ -556,13 +547,12 @@ auto run(string[] args)
 
         if (context.reexecuted)
         {
-            writeln("[!] still fails; exiting");
+            printError("still fails; exiting");
             return ShellReturnValue.otherPermissionsError;
         }
 
-        writeln("[!] ", e.msg);
-        writeln("[+] re-executing with sudo.");
-        stdout.flush();
+        printError(e.msg);
+        printInfo("re-executing with sudo.");
 
         const reexecCommand =
         [
@@ -580,36 +570,49 @@ auto run(string[] args)
 
         const wgOverridden = (environment.get("WG", string.init).length > 0);
 
-        writeln("[!] ", e.msg);
+        printError(e.msg);
 
         if (wgOverridden)
         {
-            writeln("[+] /usr/bin/wg is overridden by the WG environment variable");
+            printInfo("/usr/bin/wg is overridden by the WG environment variable");
         }
         else
         {
-            writeln("[?] is wireguard-tools (or equivalent) installed?");
+            printQuery("is wireguard-tools (or equivalent) installed?");
         }
         return ShellReturnValue.commandNotFound;
     }
     catch (NetworkException e)
     {
-        writeln("[!] ", e.msg);
+        printError(e.msg);
         return ShellReturnValue.networkError;
     }
     catch (UTFException e)
     {
-        writeln("[!] failed to parse peer or batsign file");
-        writeln("[?] was a non-text file read?");
+        printError("failed to parse peer or batsign file");
+        printQuery("was a non-text file read?");
         return ShellReturnValue.badFiles;
     }
     catch (Exception e)
     {
-        writeln("[!] ", e.msg);
+        printError(e.msg);
         return ShellReturnValue.exception;
     }
 
     assert(0, "unreachable");
+}
+
+
+// printGetoptInfo
+/**
+    Prints a message to the screen, indicating that more information can be found
+    by running the program with the `--help` flag.
+ */
+void printGetoptInfo()
+{
+    import std.stdio : stdout, writeln;
+    printInfo("see --help for more information");
+    stdout.flush();
 }
 
 
@@ -636,10 +639,7 @@ auto tryRun(string[] args)
     }
     catch (Exception e)
     {
-        import wg_monitor.common : ShellReturnValue;
-        import std.stdio : writeln;
-
-        writeln("[!] ", e.msg);
+        printError(e.msg);
         return ShellReturnValue.exception;
     }
 }

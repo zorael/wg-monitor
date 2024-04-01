@@ -418,6 +418,7 @@ auto report(
     const SortedPeers sortedPeers,
     const size_t loopIteration)
 {
+    import wg_monitor.cout;
     import wg_monitor.peer : Peer;
     import std.array : join;
     import std.stdio : stdout, writeln;
@@ -435,28 +436,25 @@ auto report(
     if (sortedPeers.justLost.length)
     {
         auto range = getShortPeerRange(sortedPeers.justLost);
-        writeln("[!] just lost: ", range);
+        printError("just lost: ", range);
     }
 
     if (sortedPeers.justReturned.length)
     {
         auto range = getShortPeerRange(sortedPeers.justReturned);
-        writeln("[+] just returned: ", range);
+        printInfo("just returned: ", range);
     }
 
     if (sortedPeers.stillLost.length)
     {
         auto range = getShortPeerRange(sortedPeers.stillLost);
-        writeln("[!] still lost: ", range);
+        printError("still lost: ", range);
     }
 
     if (sortedPeers.allPresent)
     {
-        writeln("[+] all present");
+        printInfo("all present");
     }
-
-    scope(exit) stdout.flush();
-    stdout.flush();
 
     const body_ = composeNotificationBody(context, sortedPeers, loopIteration).join('\n');
 
@@ -467,6 +465,7 @@ auto report(
             writeln(' ');
             writeln(body_);
             writeln(' ');
+            stdout.flush();
         }
         return true;
     }
@@ -480,14 +479,16 @@ auto report(
 
         if (commandSuccess)
         {
-            writeln("[+] notification command successful");
+            printInfo("notification command successful");
             //writeln(result.output.chomp());
+            //stdout.flush();
         }
         else /*if (!success)*/
         {
             import std.string : chomp;
-            writeln("[!] notification command failed with status ", result.status);
+            printError("notification command failed with status ", result.status);
             writeln(result.output.chomp());
+            stdout.flush();
         }
 
         // If bothNotificationMethods is set, continue to send a batsign too.
@@ -499,7 +500,7 @@ auto report(
 
     if (!batsignFailures.length)
     {
-        writeln("[+] notification post successful");
+        printInfo("notification post successful");
         return context.command.length ?
             commandSuccess :
             true;
@@ -509,19 +510,20 @@ auto report(
     {
         if (failure.exceptionText.length)
         {
-            writeln("[!] notification post failed: ", failure.exceptionText);
+            printError("notification post failed: ", failure.exceptionText);
             continue;
         }
 
-        writeln("[!] notification post returned status ", failure.code);
+        printError("notification post returned status ", failure.code);
 
         if (failure.code == 404)
         {
-            writeln("[?] is the URL correct?");
+            printQuery("is the URL correct?");
         }
-        else
+        else if (failure.responseBody.length)
         {
-            if (failure.responseBody.length) writeln(failure.responseBody);
+            writeln(failure.responseBody);
+            stdout.flush();
         }
     }
 
