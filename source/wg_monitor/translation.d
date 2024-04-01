@@ -25,7 +25,7 @@ struct Translation
     /**
         Language name.
      */
-    string language = string.init;
+    string language;
 
     /**
         Translation for "peer", in singular form.
@@ -140,6 +140,7 @@ static immutable allTranslations = ()
     {
         auto lineRange = translationEntry.splitter('\n');
         Translation translation;
+        translation.language = string.init;
         uint i;
 
         foreach (const line; lineRange)
