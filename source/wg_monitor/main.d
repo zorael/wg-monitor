@@ -218,62 +218,42 @@ void mainLoop(const Context context)
 }
 
 
-// printProgramVersion
+// setup
 /**
-    Prints the program version.
- */
-void printProgramVersion() @safe
-{
-    import wg_monitor.semver : WgMonitorSemVer, WgMonitorSemVerPreRelease;
-    import std.stdio : writefln, writeln;
-
-    enum sourceURL = "https://github.com/zorael/wg-monitor";
-
-    alias v = WgMonitorSemVer;
-    alias vPre = WgMonitorSemVerPreRelease;
-    enum pre = vPre.length ? "-" ~ vPre : string.init;
-
-    writefln("wireguard monitor v%d.%d.%d%s | copyright 2024 jr", v.major, v.minor, v.patch, pre);
-    writeln("$ git clone " ~ sourceURL ~ ".git");
-}
-
-
-// run
-/**
-    Entrypoint.
+    Parses command-line arguments and sets up the program.
 
     Params:
         args = Command-line arguments passed to the program.
+        context = out-reference to a new [wg_monitor.context.Context|Context],
+            which will be populated according to the command-line arguments.
+        retval = out-reference to a [wg_monitor.common.ShellReturnValue|ShellReturnValue]
+            to exit with, should it be necessary.
 
     Returns:
-        A [wg_monitor.common.ShellReturnValue|ShellReturnValue], indicating the
-        program's success or failure.
+        A `bool` indicating whether the program should exit.
  */
-auto run(string[] args)
+auto setup(
+    const string[] args,
+    out Context context,
+    out ShellReturnValue retval)
 {
-    import wg_monitor.common :
-        CommandNotFoundException,
-        NeedSudoException,
-        NetworkException,
-        ShellReturnValue;
-    import wg_monitor.config : handleGetopt, parseBatsignFile, parsePeerFile;
     import std.getopt : GetOptException;
     import std.stdio : stdout, writefln, writeln;
 
     scope(exit) stdout.flush();
 
-    Context context;
-
     try
     {
-        const getoptResults = handleGetopt(args, context);
+        import wg_monitor.config : handleGetopt;
+
+        const getoptResults = handleGetopt(args.dup, context);
 
         if (getoptResults.helpWanted)
         {
             import wg_monitor.translation : allTranslationLanguageNames;
             import std.getopt : Option;
 
-            static void customGetoptPrinter(
+            static void printGetoptHelpScreen(
                 const Option[] options,
                 const string pattern = "%*s  %*s  %s")
             {
@@ -324,8 +304,11 @@ auto run(string[] args)
             printGetoptHelpScreen(getoptResults.options);
             writeln(' ');
             writefln(languagePattern, allTranslationLanguageNames);
-            return ShellReturnValue.success;
+            retval = ShellReturnValue.success;
+            return true;
         }
+
+        return false;
     }
     catch (GetOptException e)
     {
@@ -337,13 +320,38 @@ auto run(string[] args)
         return true;
     }
 
-    if (context.showVersionAndExit)
+    assert(0, "unreachable");
+}
+
+
+// run
+/**
+    Entrypoint.
+
+    Params:
+        args = Command-line arguments passed to the program.
+        context = Reference to the [wg_monitor.context.Context|Context] struct.
+
+    Returns:
+        A [wg_monitor.common.ShellReturnValue|ShellReturnValue], indicating the
+        program's success or failure.
+ */
+auto run(const string[] args, ref Context context)
+{
+    import wg_monitor.common :
+        CommandNotFoundException,
+        NeedSudoException,
+        NetworkException,
+        ShellReturnValue;
+    import wg_monitor.config : parseBatsignFile, parsePeerFile;
+    import std.stdio : stdout, writefln, writeln;
+    import std.utf : UTFException;
+
+    if (!context.reexecuted)
     {
         printProgramVersion();
         writeln(' ');
     }
-
-    if (!context.reexecuted) printIntro();
 
     try
     {
@@ -593,11 +601,11 @@ auto run(string[] args)
         printQuery("was a non-text file read?");
         return ShellReturnValue.badFiles;
     }
-    catch (Exception e)
+    /*catch (Exception e)  // catch in tryRun
     {
         printError(e.msg);
         return ShellReturnValue.exception;
-    }
+    }*/
 
     assert(0, "unreachable");
 }
@@ -621,21 +629,33 @@ public:
 
 // tryRun
 /**
-    Calls [run] in a try-catch, so exceptions thrown that were not internally
-    caught are still printed to the screen.
+    Calls [setup] and [run] in a try-catch, so exceptions thrown that were not
+    internally caught are still printed to the screen.
 
     Params:
         args = Command-line arguments passed to the program.
 
     Returns:
         A [wg_monitor.common.ShellReturnValue|ShellReturnValue], indicating the
-        program's success or failure, as thrown by [run].
+        program's success or failure, as thrown by [setup] or [run].
  */
-auto tryRun(string[] args)
+auto tryRun(const string[] args)
 {
     try
     {
-        return run(args);
+        Context context;
+        ShellReturnValue retval;
+        const shouldExit = setup(args, context, retval);
+
+        if (shouldExit) return retval;
+
+        if (context.showVersionAndExit)
+        {
+            printProgramVersion();
+            return ShellReturnValue.success;
+        }
+
+        return run(args, context);
     }
     catch (Exception e)
     {
