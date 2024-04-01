@@ -387,7 +387,7 @@ auto composeNotificationBody(
             context.translation.lastSeen);
     }
 
-    if (sortedPeers.allPresent && context.translation.nowHasContactWithAll)
+    if (sortedPeers.allPresent && context.translation.nowHasContactWithAll.length)
     {
         /*if (sink.data.length)*/ sink.put(string.init);
         const message = context.translation.nowHasContactWithAll;
