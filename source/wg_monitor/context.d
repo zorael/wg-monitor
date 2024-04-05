@@ -69,6 +69,16 @@ public:
     string iface;
 
     /**
+        Wireguard public key hash.
+     */
+    string publicKey;
+
+    /**
+        Name of this machine, as used in notifications. Derived from the public key.
+     */
+    string serverName;
+
+    /**
         Filename of the Batsign URL file.
 
         See_Also:
@@ -149,11 +159,6 @@ public:
             [wg_monitor.config.parsePeerFile]
      */
     bool[string] peerList;
-
-    /**
-        Hostname to use in notifications.
-     */
-    string hostname; // = Socket.hostName;  // must naturally be set at runtime
 
     /**
         Whether or not to print verbose progress messages.

@@ -29,10 +29,10 @@ version(Windows)
     Params:
         context = The context struct.
  */
-void mainLoop(const Context context)
+void mainLoop(/*const*/ Context context)
 {
-    import wg_monitor.peer : Peer, SortedPeers;
-    import wg_monitor.wg : getHandshakes, getRawHandshakeString;
+    import wg_monitor.peer : Peer, SortedPeers, getNameFromHash;
+    import wg_monitor.wg : getHandshakes, getOwnPublicKey, getRawHandshakeString;
     import wg_monitor.common : NoSuchInterfaceException;
     import lu.string : plurality;
     import std.datetime.systime : Clock, SysTime;
@@ -41,9 +41,9 @@ void mainLoop(const Context context)
 
     try
     {
-        // Try it out once to see if it works. We may be missing permissions.
+        // Try it to see if it works. We may be missing permissions.
         // It throws if it fails.
-        getRawHandshakeString(context.iface);
+        context.publicKey = getOwnPublicKey(context.iface);
     }
     catch (NoSuchInterfaceException e)
     {
@@ -58,7 +58,7 @@ void mainLoop(const Context context)
             try
             {
                 // Keep trying
-                getRawHandshakeString(context.iface);
+                context.publicKey = getOwnPublicKey(context.iface);
 
                 // If we're here, it didn't throw
                 printInfo("interface found");
@@ -74,6 +74,8 @@ void mainLoop(const Context context)
             }
         }
     }
+
+    context.serverName = getNameFromHash(context.publicKey, context.translation.phaseDescription).toString();
 
     if (context.dryRun)
     {

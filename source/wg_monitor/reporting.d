@@ -362,7 +362,7 @@ auto composeNotificationBody(
         {
             import std.array : replace;
             const message = context.translation.powerRestored
-                .replace("$hostname", context.hostname);
+                .replace("$serverName", context.serverName);
             sink.put(message);
         }
         return sink.data;
