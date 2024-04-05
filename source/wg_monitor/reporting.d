@@ -18,114 +18,6 @@ import wg_monitor.context : Context;
 import wg_monitor.peer : SortedPeers;
 
 
-// getNameFromHash
-/**
-    Parses a peer hash and returns a Voldemort struct that represents it in terms
-    of naming.
-
-    Params:
-        fullHash = The full peer hash.
-        phaseDescriptionPattern = The pattern to use for phase descriptions.
-
-    Returns:
-        A Voldemort representation of a peer in terms of naming.
- */
-auto getNameFromHash(const string fullHash, const string phaseDescriptionPattern)
-{
-    import wg_monitor.common : shortHashLength;
-    import lu.string : advancePast;
-    import std.string : indexOf;
-
-    static struct PeerRepresentation
-    {
-        string name;
-        string hash;
-        uint phase;
-
-        string phaseDescriptionPattern;
-
-        auto toString() const
-        {
-            import std.array : replace;
-            import std.conv : to;
-            import std.string : capitalize;
-
-            if (phase)
-            {
-                return this.phaseDescriptionPattern
-                    .replace("$phaseName", this.name.capitalize())
-                    .replace("$phaseNumber", this.phase.to!string);
-            }
-            else
-            {
-                return this.name.capitalize();
-            }
-        }
-    }
-
-    PeerRepresentation peerRep;
-    peerRep.hash = fullHash;
-    peerRep.phaseDescriptionPattern = phaseDescriptionPattern;
-    string slice = fullHash[0..shortHashLength];
-
-    if (slice.indexOf('+') != -1)
-    {
-        import std.ascii : isDigit;
-
-        peerRep.name = slice.advancePast('+');
-
-        if (slice.length && slice[0].isDigit)
-        {
-            enum asciiNumberOffset = 48;
-            peerRep.phase = (slice[0] - asciiNumberOffset);
-
-            if ((peerRep.phase < 1) || (peerRep.phase > 3))
-            {
-                // phases are 1-3; reset to 0 if invalid
-                peerRep.phase = 0;
-            }
-        }
-    }
-    else
-    {
-        import std.typecons : Flag, No, Yes;
-        peerRep.name = slice.advancePast('/', Yes.inherit);
-    }
-
-    return peerRep;
-}
-
-///
-unittest
-{
-    import wg_monitor.common : shortHashLength;
-
-    static if (shortHashLength >= 6)
-    {
-        import std.conv : to;
-
-        {
-            enum hash = "44aN+J6y0BDf6hO8nbxlsKXVt+W9lra5KBaS7aUtgba=";
-            const peer = getNameFromHash(hash, string.init);
-            assert((peer.name == "44aN"), peer.name);
-            assert(!peer.phase, peer.phase.to!string);
-        }
-        {
-            enum hash = "44AN+1/fHCM12yay8WUitW1S3bxvRtulWnSQdHDeGab=";
-            const peer = getNameFromHash(hash, string.init);
-            assert((peer.name == "44AN"), peer.name);
-            assert((peer.phase == 1), peer.phase.to!string);
-        }
-        {
-            enum hash = "Nian//A7bVbTv2OVM3jzx2PeHw7EldrkyB8tkz31Oi0=";
-            const peer = getNameFromHash(hash, string.init);
-            assert((peer.name == "Nian"), peer.name);
-            assert(!peer.phase, peer.phase.to!string);
-        }
-    }
-}
-
-
 // sendBatsign
 /**
     Sends a notification via Batsign.
@@ -283,7 +175,7 @@ auto composeNotificationBody(
     const SortedPeers sortedPeers,
     const size_t loopIteration)
 {
-    import wg_monitor.peer : Peer;
+    import wg_monitor.peer : Peer, getNameFromHash;
     import std.array : Appender;
 
     Appender!(string[]) sink;
