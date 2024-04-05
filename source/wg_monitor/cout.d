@@ -40,7 +40,7 @@ void printProgramVersion() @safe
         sign = The character to prefix the message with (inside brackets).
         args = The variadic arguments to print.
  */
-void printImpl(Args...)(const char sign, const Args args)
+void printImpl(Args...)(const char sign, /*const*/ Args args)
 {
     import std.stdio : stdout, writeln;
     writeln('[', sign, "] ", args);
@@ -58,7 +58,7 @@ void printImpl(Args...)(const char sign, const Args args)
     See_Also:
         [printImpl]
  */
-void printInfo(Args...)(const Args args)
+void printInfo(Args...)(/*const*/ Args args)
 {
     printImpl('+', args);
 }
@@ -74,7 +74,7 @@ void printInfo(Args...)(const Args args)
     See_Also:
         [printImpl]
  */
-void printQuery(Args...)(const Args args)
+void printQuery(Args...)(/*const*/ Args args)
 {
     printImpl('?', args);
 }
@@ -90,7 +90,7 @@ void printQuery(Args...)(const Args args)
     See_Also:
         [printImpl]
  */
-void printError(Args...)(const Args args)
+void printError(Args...)(/*const*/ Args args)
 {
     printImpl('!', args);
 }
@@ -103,7 +103,7 @@ void printError(Args...)(const Args args)
     Params:
         args = The variadic arguments to print.
  */
-void printIndented(Args...)(const Args args)
+void printIndented(Args...)(/*const*/ Args args)
 {
     import std.stdio : stdout, writeln;
     writeln("    ", args);
