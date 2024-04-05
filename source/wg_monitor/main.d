@@ -246,7 +246,7 @@ auto setup(
     {
         import wg_monitor.config : handleGetopt;
 
-        const getoptResults = handleGetopt(args.dup, context);
+        const getoptResults = handleGetopt(args, context);
 
         if (getoptResults.helpWanted)
         {

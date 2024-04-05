@@ -30,7 +30,7 @@ public:
     Returns:
         The results of [std.getopt.getopt|getopt].
  */
-auto handleGetopt(string[] args, out Context context)
+auto handleGetopt(const string[] args, out Context context)
 {
     import std.socket : Socket;
     import core.time : seconds;
@@ -41,8 +41,9 @@ auto handleGetopt(string[] args, out Context context)
     int peerTimeout = -1;
     int sleepBetweenChecks = -1;
     int reminderPeriodicity = -1;
+    auto mutArgs = args.dup;
 
-    auto result = std.getopt.getopt(args,
+    auto result = std.getopt.getopt(mutArgs,
         std.getopt.config.caseSensitive,
         //std.getopt.config.required,
         "i|interface",
