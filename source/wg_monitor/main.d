@@ -620,9 +620,7 @@ auto run(const string[] args, ref Context context)
  */
 void printGetoptInfo()
 {
-    import std.stdio : stdout, writeln;
     printInfo("see --help for more information");
-    stdout.flush();
 }
 
 
