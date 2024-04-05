@@ -194,7 +194,7 @@ void mainLoop(/*const*/ Context context)
                     peer.timestamp.hour, peer.timestamp.minute,
                     deltaString,
                     timedOut ? " (!)" : string.init,
-                    thisChanged ? " (UPDATED)" : string.init);
+                    (thisChanged && (loopIteration > 0)) ? " (UPDATED)" : string.init);
             }
         }
 
