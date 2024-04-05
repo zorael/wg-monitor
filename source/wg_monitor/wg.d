@@ -16,14 +16,15 @@ import wg_monitor.peer : Peer;
 public:
 
 
-// getRawHandshakeString
+// runWGCommand
 /**
-    Executes a Wireguard `latest-handshakes` command and returns the raw output.
+    Executes a Wireguard `wg` command and returns the raw output.
 
     If there were errors, a relevant exception is thrown.
 
     Params:
         iface = The string name of the Wireguard interface.
+        command = The command to execute.
 
     Returns:
         The `chomp`ed output of the Wireguard command.
@@ -35,7 +36,7 @@ public:
         [wg_monitor.common.CommandNotFoundException] if the `wg` command wasn't found.
         [object.Exception|Exception] on other more generic errors.
  */
-auto getRawHandshakeString(const string iface)
+private auto runWGCommand(const string iface, const string command)
 {
     import wg_monitor.common : NeedSudoException, NetworkException, NoSuchInterfaceException;
     import std.process : ProcessException, environment, execute;
@@ -46,7 +47,7 @@ auto getRawHandshakeString(const string iface)
         environment.get("WG", "/usr/bin/wg"),
         "show",
         iface,
-        "latest-handshakes",
+        command,
     ];
 
     try
@@ -87,6 +88,42 @@ auto getRawHandshakeString(const string iface)
     }
 
     // Let other Exceptions pass
+}
+
+
+// getOwnPublicKey
+/**
+    Executes a Wireguard `public-key` command and returns the raw output.
+
+    If there were errors, a relevant exception is thrown.
+
+    Params:
+        iface = The string name of the Wireguard interface.
+
+    Returns:
+        A public key string.
+ */
+auto getOwnPublicKey(const string iface)
+{
+    return runWGCommand(iface, "public-key");
+}
+
+
+// getRawHandshakeString
+/**
+    Executes a Wireguard `latest-handshakes` command and returns the raw output.
+
+    If there were errors, a relevant exception is thrown.
+
+    Params:
+        iface = The string name of the Wireguard interface.
+
+    Returns:
+        A list of handshake strings.
+ */
+auto getRawHandshakeString(const string iface)
+{
+    return runWGCommand(iface, "latest-handshakes");
 }
 
 
