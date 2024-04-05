@@ -11,7 +11,7 @@ stillMissingContactWith=Still missing contact with $numPeers $peerNoun:
 notSeenSinceRestart=not seen since restart of this unit
 lastSeen=last seen $timestamp
 back=back $timestamp
-nowHasContactWithAll=All peers in contact.
+nowHasContactWithAll=All peers in contact. ($peerList)
 
 language=swedish
 peerSingular=nod
@@ -24,7 +24,7 @@ stillMissingContactWith=Saknar fortfarande kontakt med $numPeers $peerNoun:
 notSeenSinceRestart=ej synts sedan omstart av maskinen
 lastSeen=sågs senast $timestamp
 back=tillbaka $timestamp
-nowHasContactWithAll=Har därmed kontakt med alla noder.
+nowHasContactWithAll=Har därmed kontakt med alla noder. ($peerList)
 
 language=japanese
 peerSingular=
@@ -37,7 +37,7 @@ stillMissingContactWith=まだ$numPeers台のピアとの接触がありませ�
 notSeenSinceRestart=再起動以来、連絡がありません
 lastSeen=$timestampでロスト
 back=$timestampに確認
-nowHasContactWithAll=すべてのピアと接触しています。
+nowHasContactWithAll=すべてのピアと接触しています。（$peerList）
 
 language=english-minimal
 peerSingular=
@@ -50,7 +50,7 @@ stillMissingContactWith=Still lost:
 notSeenSinceRestart=never seen
 lastSeen=seen $timestamp
 back=back $timestamp
-nowHasContactWithAll=All OK.
+nowHasContactWithAll=All OK. ($peerList)
 
 language=debug
 # should be left empty

@@ -294,17 +294,32 @@ auto composeNotificationBody(
         const size_t numPeers)
     {
         import lu.string : plurality;
-        import std.array : replace;
+        import std.algorithm.iteration : map;
+        import std.algorithm.sorting : sort;
+        import std.array : array, join, replace;
         import std.conv : to;
+        import std.string : indexOf;
 
         const peerNoun = numPeers.plurality(
             context.translation.peerSingular,
             context.translation.peerPlural);
         const numPeersString = numPeers.to!string;
+        const peerList = (translationLine.indexOf("$peerList") != -1) ?
+            context.peerList
+                .byKey
+                .map!(hash => getNameFromHash(hash, context.translation.phaseDescription))
+                .array
+                .map!(peer => peer.toString())
+                .array
+                .sort()
+                .release()
+                .join(", ") :
+            string.init;
 
-        const message = translationLine
+        auto message = translationLine
             .replace("$numPeers", numPeersString)
-            .replace("$peerNoun", peerNoun);
+            .replace("$peerNoun", peerNoun)
+            .replace("$peerList", peerList);
 
         sink.put(message);
         sink.put(string.init);
@@ -390,8 +405,9 @@ auto composeNotificationBody(
     if (sortedPeers.allPresent && context.translation.nowHasContactWithAll.length)
     {
         /*if (sink.data.length)*/ sink.put(string.init);
-        const message = context.translation.nowHasContactWithAll;
-        sink.put(message);
+        putMessage(
+            context.translation.nowHasContactWithAll,
+            sortedPeers.stillLost.length);
     }
 
     return sink.data;
