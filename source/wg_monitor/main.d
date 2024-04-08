@@ -229,7 +229,7 @@ auto blockResolvingServerName(ref Context context)
 }
 
 
-// setup
+// applyGetopt
 /**
     Parses command-line arguments and sets up the program.
 
@@ -243,7 +243,7 @@ auto blockResolvingServerName(ref Context context)
     Returns:
         A `bool` indicating whether the program should exit.
  */
-auto setup(
+auto applyGetopt(
     const string[] args,
     out Context context,
     out ShellReturnValue retval)
@@ -645,7 +645,7 @@ public:
 
 // tryRun
 /**
-    Calls [setup] and [run] in a try-catch, so exceptions thrown that were not
+    Calls [applyGetopt] and [run] in a try-catch, so exceptions thrown that were not
     internally caught are still printed to the screen.
 
     Params:
@@ -653,7 +653,7 @@ public:
 
     Returns:
         A [wg_monitor.common.ShellReturnValue|ShellReturnValue], indicating the
-        program's success or failure, as thrown by [setup] or [run].
+        program's success or failure, as thrown by [applyGetopt] or [run].
  */
 auto tryRun(const string[] args)
 {
@@ -661,7 +661,7 @@ auto tryRun(const string[] args)
     {
         Context context;
         ShellReturnValue retval;
-        const shouldExit = setup(args, context, retval);
+        const shouldExit = applyGetopt(args, context, retval);
 
         if (shouldExit) return retval;
 
