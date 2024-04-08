@@ -133,7 +133,7 @@ final class CommandNotFoundException : Exception
         const string[] command,
         const string file = __FILE__,
         const size_t line = __LINE__,
-        Throwable nextInChain = null) pure nothrow @safe
+        Throwable nextInChain = null) pure nothrow /*@nogc*/ @safe
     {
         this.command = command.dup;
         super(message, file, line, nextInChain);
@@ -162,7 +162,7 @@ enum ShellReturnValue
     failure = 1,
 
     /**
-        Failure during getopt-parsing.
+        Failure during getopt parsing.
      */
     getoptFailure = 8,
 

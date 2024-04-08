@@ -199,7 +199,7 @@ auto parseBatsignFile(const string batsignFile)
         defaultFilename = The default filename of the file to resolve.
 
     Returns:
-        `true` if the file was found and the `filename` paramater was assigned
+        `true` if the file was found and the `filename` parameter was assigned
         to it; `false` otherwise.
  */
 auto resolveFilename(

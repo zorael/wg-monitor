@@ -69,7 +69,7 @@ public:
     string iface;
 
     /**
-        Wireguard public key hash.
+        Wireguard public key of this machine.
      */
     string publicKey;
 
