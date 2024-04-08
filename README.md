@@ -10,6 +10,8 @@ Peers must have a `PersistentKeepalive` setting in their Wireguard configuration
 
 Notifications are sent as short emails via [**Batsign**](#batsign), or by invocation of an external command.
 
+Peers are referred to in notifications by [a representation](https://github.com/zorael/wg-monitor/wiki/Humanly%E2%80%90readable-peers) of their public keys. Use of a vanity key generator is recommended to make these more easily recognisable. [Here](https://github.com/axllent/wireguard-vanity-keygen) is one, [here](https://github.com/warner/wireguard-vanity-address) is another.
+
 **This program is Posix-only until such time a console `wg` tool exists for Windows.**
 
 ## tl;dr
