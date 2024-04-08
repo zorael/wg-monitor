@@ -31,56 +31,11 @@ version(Windows)
  */
 void mainLoop(/*const*/ Context context)
 {
-    import wg_monitor.peer : Peer, SortedPeers, getNameFromHash;
-    import wg_monitor.wg : getHandshakes, getOwnPublicKey, getRawHandshakeString;
-    import wg_monitor.common : NoSuchInterfaceException;
+    import wg_monitor.peer : Peer, SortedPeers;
     import lu.string : plurality;
     import std.datetime.systime : Clock, SysTime;
     import std.format : format;
     import std.stdio : stdout;
-
-    try
-    {
-        // Try it to see if it works. We may be missing permissions.
-        // It throws if it fails.
-        context.publicKey = getOwnPublicKey(context.iface);
-    }
-    catch (NoSuchInterfaceException e)
-    {
-        if (!context.waitForInterface) throw e;
-
-        printError(e.msg);
-        printInfo("waiting for interface to show up");
-
-        waitLoop:
-        while (true)
-        {
-            try
-            {
-                // Keep trying
-                context.publicKey = getOwnPublicKey(context.iface);
-
-                // If we're here, it didn't throw
-                printInfo("interface found");
-                break waitLoop;
-            }
-            catch (NoSuchInterfaceException _)
-            {
-                import core.thread : Thread;
-                import core.time : seconds;
-
-                static immutable initWaitForInterfaceWait = 10.seconds;
-                Thread.sleep(initWaitForInterfaceWait);
-            }
-        }
-    }
-
-    context.serverName = getNameFromHash(context.publicKey, context.translation.phaseDescription).toString();
-
-    if (context.dryRun)
-    {
-        printInfo("dry run: not sending notifications");
-    }
 
     // Print message *after* we know permissions are ok.
     enum monitorMessagePattern = "monitoring %d %s, probing every %s.";
@@ -110,6 +65,8 @@ void mainLoop(/*const*/ Context context)
 
     while (true)
     {
+        import wg_monitor.common : NoSuchInterfaceException;
+        import wg_monitor.wg : getHandshakes;
         import core.thread : Thread;
         import core.time : Duration;
 
@@ -217,6 +174,58 @@ void mainLoop(/*const*/ Context context)
     }
 
     assert(0, "unreachable");
+}
+
+
+// blockResolvingServerName
+/**
+    Tries to resolve the server name from the public key, blocking until the
+    interface shows up if necessary.
+
+    Params:
+        context = Reference to the [wg_monitor.context.Context|Context] struct.
+ */
+auto blockResolvingServerName(ref Context context)
+{
+    import wg_monitor.common : NoSuchInterfaceException;
+    import wg_monitor.wg : getOwnPublicKey;
+    import wg_monitor.peer : getNameFromHash;
+
+    try
+    {
+        // Try it to see if it works. We may be missing permissions.
+        // It throws if it fails.
+        context.publicKey = getOwnPublicKey(context.iface);
+        context.serverName = getNameFromHash(context.publicKey, context.translation.phaseDescription).toString();
+    }
+    catch (NoSuchInterfaceException e)
+    {
+        if (!context.waitForInterface) throw e;
+
+        printError(e.msg);
+        printInfo("waiting for interface to show up");
+
+        while (true)
+        {
+            try
+            {
+                // Keep trying
+                context.publicKey = getOwnPublicKey(context.iface);
+
+                // If we're here, it didn't throw
+                printInfo("interface found");
+                return;  // success
+            }
+            catch (NoSuchInterfaceException _)
+            {
+                import core.thread : Thread;
+                import core.time : seconds;
+
+                static immutable initWaitForInterfaceWait = 10.seconds;
+                Thread.sleep(initWaitForInterfaceWait);
+            }
+        }
+    }
 }
 
 
@@ -547,6 +556,13 @@ auto run(const string[] args, ref Context context)
             writeln("language:      ", context.language);
             writeln(' ');
             stdout.flush();
+        }
+
+        blockResolvingServerName(context);
+
+        if (context.dryRun)
+        {
+            printInfo("dry run: not sending notifications");
         }
 
         mainLoop(context);
