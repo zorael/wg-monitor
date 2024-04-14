@@ -252,7 +252,8 @@ auto composeNotificationBody(
             }
             else
             {
-                const timestamp = "%d-%02d-%02d %02d:%02d".format(
+                enum datePattern = "%d-%02d-%02d %02d:%02d";
+                const timestamp = datePattern.format(
                     peer.timestamp.year, cast(uint)peer.timestamp.month, peer.timestamp.day,
                     peer.timestamp.hour, peer.timestamp.minute);
                 const line = pattern.format(
