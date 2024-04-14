@@ -332,9 +332,18 @@ auto getNameFromHash(const string fullHash, const string phaseDescriptionPattern
 
             if (phase)
             {
+                /*
+                    These have to match the tokens used in the translations.txt file.
+                 */
+                enum ReplaceTokens
+                {
+                    phaseName = "$phaseName",
+                    phaseNumber = "$phaseNumber",
+                }
+
                 return this.phaseDescriptionPattern
-                    .replace("$phaseName", this.name.capitalize())
-                    .replace("$phaseNumber", this.phase.to!string);
+                    .replace(cast(string)ReplaceTokens.phaseName, this.name.capitalize())
+                    .replace(cast(string)ReplaceTokens.phaseNumber, this.phase.to!string);
             }
             else
             {

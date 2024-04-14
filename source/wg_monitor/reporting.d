@@ -178,6 +178,21 @@ auto composeNotificationBody(
     import wg_monitor.peer : Peer, getNameFromHash;
     import std.array : Appender;
 
+    /*
+        These have to match the tokens used in the translations.txt file.
+
+        $phaseName and $phaseNumber are used in the .toString() of the Voldemort
+        returned by getNameFromHash, not here.
+     */
+    enum ReplaceTokens
+    {
+        numPeers = "$numPeers",
+        peerNoun = "$peerNoun",
+        peerList = "$peerList",
+        timestamp = "$timestamp",
+        serverName = "$serverName",
+    }
+
     Appender!(string[]) sink;
     sink.reserve(32);  // number of peers + upward of 7 extra lines
 
@@ -196,7 +211,7 @@ auto composeNotificationBody(
             context.translation.peerSingular,
             context.translation.peerPlural);
         const numPeersString = numPeers.to!string;
-        const peerList = (translationLine.indexOf("$peerList") != -1) ?
+        const peerList = (translationLine.indexOf(cast(string)ReplaceTokens.peerList) != -1) ?
             context.peerList
                 .byKey
                 .map!(hash => getNameFromHash(hash, context.translation.phaseDescription))
@@ -209,9 +224,9 @@ auto composeNotificationBody(
             string.init;
 
         auto message = translationLine
-            .replace("$numPeers", numPeersString)
-            .replace("$peerNoun", peerNoun)
-            .replace("$peerList", peerList);
+            .replace(cast(string)ReplaceTokens.numPeers, numPeersString)
+            .replace(cast(string)ReplaceTokens.peerNoun, peerNoun)
+            .replace(cast(string)ReplaceTokens.peerList, peerList);
 
         sink.put(message);
         sink.put(string.init);
@@ -242,7 +257,7 @@ auto composeNotificationBody(
                     peer.timestamp.hour, peer.timestamp.minute);
                 const line = pattern.format(
                     getNameFromHash(peer.hash, context.translation.phaseDescription),
-                    wording.replace("$timestamp", timestamp));
+                    wording.replace(cast(string)ReplaceTokens.timestamp, timestamp));
                 sink.put(line);
             }
         }
@@ -253,8 +268,10 @@ auto composeNotificationBody(
         if (context.translation.powerRestored.length)
         {
             import std.array : replace;
+
+            // No need to go through the whole putMessage rigmarole for this one
             const message = context.translation.powerRestored
-                .replace("$serverName", context.serverName);
+                .replace(cast(string)ReplaceTokens.serverName, context.serverName);
             sink.put(message);
         }
         return sink.data;
