@@ -57,12 +57,6 @@ public:
         Duration sleepBetweenChecks = 1.minutes;
 
         /**
-            How long to wait before repeating a notification, even if there were
-            no new peers lost or returned.
-         */
-        Duration reminderPeriodicity = 6.hours;
-
-        /**
             How long to wait before sending the first reminder, after a peer has
             been lost.
          */
