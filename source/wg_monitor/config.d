@@ -37,7 +37,9 @@ auto handleGetopt(const string[] args, out Context context)
 
     int peerTimeout = -1;
     int sleepBetweenChecks = -1;
-    int reminderPeriodicity = -1;
+    int firstReminder = -1;
+    int secondReminder = -1;
+    int thirdReminder = -1;
     auto mutArgs = args.dup;
 
     auto result = std.getopt.getopt(mutArgs,
@@ -67,9 +69,15 @@ auto handleGetopt(const string[] args, out Context context)
         "s|sleep",
             "Sleep between peer handshake checks in seconds",
             &sleepBetweenChecks,
-        "r|reminder",
-            "Notification reminder period in seconds",
-            &reminderPeriodicity,
+        "first-reminder",
+            string.init, //"First notification reminder delay in seconds",
+            &firstReminder,
+        "second-reminder",
+            string.init, //"Second notification reminder delay in seconds",
+            &secondReminder,
+        "third-reminder",
+            string.init, //"Third notification reminder delay in seconds",
+            &thirdReminder,
         "wait-for-interface",
             "Wait for the Wireguard interface to show up",
             &context.waitForInterface,
@@ -91,8 +99,9 @@ auto handleGetopt(const string[] args, out Context context)
 
     if (peerTimeout >= 0) context.durations.peerTimeout = peerTimeout.seconds;
     if (sleepBetweenChecks > 0) context.durations.sleepBetweenChecks = sleepBetweenChecks.seconds;
-    if (reminderPeriodicity >= 0) context.durations.reminderPeriodicity = reminderPeriodicity.seconds;
-
+    if (firstReminder > 0) context.durations.firstReminder = firstReminder.seconds;
+    if (secondReminder > 0) context.durations.secondReminder = secondReminder.seconds;
+    if (thirdReminder > 0) context.durations.thirdReminder = thirdReminder.seconds;
     return result;
 }
 

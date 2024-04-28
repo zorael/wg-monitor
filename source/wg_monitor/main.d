@@ -325,6 +325,7 @@ auto applyGetopt(
                 static auto shouldSkipFlag(const Option opt)
                 {
                     import std.algorithm.comparison : among;
+                    import std.algorithm.searching : endsWith;
 
                     return
                         (opt.optShort == "-h") ||
@@ -332,7 +333,8 @@ auto applyGetopt(
                             "--reexec",
                             "--version",
                             "--cacert",
-                            "--both");
+                            "--both") ||
+                        opt.optLong.endsWith("-reminder");
                 }
 
                 foreach (const opt; options)
