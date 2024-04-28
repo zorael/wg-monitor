@@ -61,6 +61,24 @@ public:
             no new peers lost or returned.
          */
         Duration reminderPeriodicity = 6.hours;
+
+        /**
+            How long to wait before sending the first reminder, after a peer has
+            been lost.
+         */
+        Duration firstReminder = 6.hours;
+
+        /**
+            How long to wait before sending the second reminder, after a peer has
+            been lost.
+         */
+        Duration secondReminder = 24.hours;
+
+        /**
+            How long to wait before and between sending further reminders, after
+            a peer has been lost.
+         */
+        Duration thirdReminder = 48.hours;
     }
 
     /**
