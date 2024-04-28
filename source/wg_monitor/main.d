@@ -36,6 +36,23 @@ void mainLoop(/*const*/ Context context)
     import std.datetime.systime : Clock, SysTime;
     import std.format : format;
     import std.stdio : stdout;
+    import core.time : Duration;
+
+    const Duration[3] reportPeriodicity =
+    [
+        context.durations.firstReminder,
+        context.durations.secondReminder,
+        context.durations.thirdReminder,
+    ];
+
+    auto getReminderDelay(const size_t reminderCounter)
+    {
+        import std.algorithm.comparison : min;
+
+        enum upperBound = reportPeriodicity.length + (-1);
+        immutable i = min(reminderCounter, upperBound);
+        return reportPeriodicity[i];
+    }
 
     // Print message *after* we know permissions are ok.
     enum monitorMessagePattern = "monitoring %d %s, probing every %s.";
@@ -62,6 +79,7 @@ void mainLoop(/*const*/ Context context)
     SysTime lastReportTimestamp;
     const loopStart = Clock.currTime;
     size_t loopIteration;
+    uint reminderCounter;
 
     while (true)
     {
@@ -115,6 +133,7 @@ void mainLoop(/*const*/ Context context)
         auto now = Clock.currTime;
         now.fracSecs = Duration.zero;
         bool somethingChanged;
+        bool onlyReturns;
 
         peerStepLoop:
         foreach (ref peer; peers)
@@ -133,6 +152,22 @@ void mainLoop(/*const*/ Context context)
             const timedOut = (delta > context.durations.peerTimeout);
             const thisChanged = peer.step(timedOut);
             somethingChanged |= thisChanged;
+
+            with (Peer.State)
+            switch (peer.state)
+            {
+            case present:
+                // Do nothing
+                break;
+
+            case justReturned:
+                onlyReturns &= true;
+                break;
+
+            default:
+                onlyReturns = false;
+                break;
+            }
 
             if (context.progress)
             {
@@ -159,17 +194,33 @@ void mainLoop(/*const*/ Context context)
 
         const sortedPeers = SortedPeers(peers);
         const justStarted = (loopIteration == 0);
-        const shouldReport =
-            somethingChanged ||
-            justStarted ||
-            (!sortedPeers.allPresent &&
-            ((now - lastReportTimestamp) > context.durations.reminderPeriodicity));
+        const timeSinceLastReport = (now - lastReportTimestamp);
+        const reminderGracePeriodEnded = (timeSinceLastReport >= getReminderDelay(reminderCounter));
+        const shouldRemind = (!sortedPeers.allPresent && reminderGracePeriodEnded);
+
+        bool shouldReport;
+        shouldReport |= somethingChanged;
+        shouldReport |= justStarted;
+        shouldReport |= shouldRemind;
 
         if (shouldReport)
         {
             import wg_monitor.reporting : report;
+
             const success = report(context, sortedPeers, loopIteration);
-            if (success) lastReportTimestamp = now;
+
+            if (onlyReturns)
+            {
+                // Keep lastReportTimestamp and reminderCounter as-is if there were only returns
+            }
+            else
+            {
+                if (success) lastReportTimestamp = now;
+
+                // Do the following even if the report failed
+                if (sortedPeers.allPresent) reminderCounter = 0;
+                else if (shouldRemind) ++reminderCounter;
+            }
         }
     }
 
