@@ -38,6 +38,29 @@ void mainLoop(/*const*/ Context context)
     import std.stdio : stdout;
     import core.time : Duration;
 
+    void printPreamble()
+    {
+        enum monitorMessagePattern = "monitoring %d %s, probing every %s.";
+        const monitorMessage = monitorMessagePattern.format(
+            context.peerList.length,
+            context.peerList.length.plurality("peer", "peers"),
+            context.durations.sleepBetweenChecks);
+
+        printInfo(monitorMessage);
+
+        if (context.progress)
+        {
+            import std.range : repeat;
+            import std.stdio : writeln;
+
+            // Only print the separator if we're also printing progress messages.
+            enum separatorSign = '=';
+            auto separator = separatorSign.repeat(monitorMessage.length + 4);  // account for "[+] "
+            writeln(separator);
+            stdout.flush();
+        }
+    }
+
     const Duration[3] reportPeriodicity =
     [
         context.durations.firstReminder,
@@ -54,32 +77,13 @@ void mainLoop(/*const*/ Context context)
         return reportPeriodicity[i];
     }
 
-    // Print message *after* we know permissions are ok.
-    enum monitorMessagePattern = "monitoring %d %s, probing every %s.";
-    const monitorMessage = monitorMessagePattern.format(
-        context.peerList.length,
-        context.peerList.length.plurality("peer", "peers"),
-        context.durations.sleepBetweenChecks);
-
-    printInfo(monitorMessage);
-
-    if (context.progress)
-    {
-        import std.range : repeat;
-        import std.stdio : writeln;
-
-        // Only print the separator if we're also printing progress messages.
-        enum separatorSign = '=';
-        auto separator = separatorSign.repeat(monitorMessage.length + 4);  // account for "[+] "
-        writeln(separator);
-        stdout.flush();
-    }
-
     Peer[string] peers;
     SysTime lastReportTimestamp;
     const loopStart = Clock.currTime;
     size_t loopIteration;
     uint reminderCounter;
+
+    printPreamble();
 
     while (true)
     {
