@@ -44,7 +44,7 @@ auto handleGetopt(const string[] args, out Context context)
 
     auto result = std.getopt.getopt(mutArgs,
         std.getopt.config.caseSensitive,
-        //std.getopt.config.required,
+        //std.getopt.config.required,  // manually enforced later
         "i|interface",
             "Wireguard interface name",
             &context.iface,

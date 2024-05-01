@@ -428,7 +428,7 @@ auto report(
     {
         printInfo("notification post successful");
         return context.command.length ?
-            commandSuccess :
+            commandSuccess :  // bothNotificationMethods is set
             true;
     }
 

@@ -127,11 +127,7 @@ struct SortedPeers
      */
     auto allPresent() const
     {
-        return
-            //this.present.length &&
-            //!this.justReturned.length &&
-            !this.stillLost.length &&
-            !this.justLost.length;
+        return (!this.stillLost.length && !this.justLost.length);
     }
 
     /**
