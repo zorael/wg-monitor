@@ -25,7 +25,7 @@ void printProgramVersion() @safe
 
     alias v = WgMonitorSemVer;
     alias vPre = WgMonitorSemVerPreRelease;
-    enum pre = vPre.length ? "-" ~ vPre : string.init;
+    enum pre = (vPre.length > 0) ? "-" ~ vPre : string.init;
 
     writefln("wireguard monitor v%d.%d.%d%s | copyright 2024 jr", v.major, v.minor, v.patch, pre);
     writeln("$ git clone " ~ sourceURL ~ ".git");

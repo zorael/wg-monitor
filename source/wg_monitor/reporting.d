@@ -71,7 +71,7 @@ auto sendBatsign(const Context context, const string body_)
         req.keepAlive = false;
         req.timeout = postTimeout;
         req.addHeaders(headers);
-        if (context.caBundleFile.length) req.sslSetCaCert(context.caBundleFile);
+        if (context.caBundleFile.length > 0) req.sslSetCaCert(context.caBundleFile);
 
         try
         {
@@ -266,7 +266,7 @@ auto composeNotificationBody(
 
     if (loopIteration == 0)
     {
-        if (context.translation.powerRestored.length)
+        if (context.translation.powerRestored.length > 0)
         {
             import std.array : replace;
 
@@ -278,7 +278,7 @@ auto composeNotificationBody(
         return sink.data;
     }
 
-    if (sortedPeers.justLost.length && context.translation.justLostContactWith.length)
+    if ((sortedPeers.justLost.length > 0) && (context.translation.justLostContactWith.length > 0))
     {
         putMessage(
             context.translation.justLostContactWith,
@@ -288,9 +288,9 @@ auto composeNotificationBody(
             context.translation.lastSeen);
     }
 
-    if (sortedPeers.justReturned.length && context.translation.justRegainedContactWith.length)
+    if ((sortedPeers.justReturned.length > 0) && (context.translation.justRegainedContactWith.length > 0))
     {
-        if (sink.data.length) sink.put(string.init);
+        if (sink.data.length > 0) sink.put(string.init);
 
         putMessage(
             context.translation.justRegainedContactWith,
@@ -300,9 +300,9 @@ auto composeNotificationBody(
             context.translation.back);
     }
 
-    if (sortedPeers.stillLost.length && context.translation.stillMissingContactWith.length)
+    if ((sortedPeers.stillLost.length > 0) && (context.translation.stillMissingContactWith.length > 0))
     {
-        if (sink.data.length) sink.put(string.init);
+        if (sink.data.length > 0) sink.put(string.init);
 
         putMessage(
             context.translation.stillMissingContactWith,
@@ -312,9 +312,9 @@ auto composeNotificationBody(
             context.translation.lastSeen);
     }
 
-    if (sortedPeers.allPresent && context.translation.nowHasContactWithAll.length)
+    if (sortedPeers.allPresent && (context.translation.nowHasContactWithAll.length > 0))
     {
-        /*if (sink.data.length)*/ sink.put(string.init);
+        /*if (sink.data.length > 0)*/ sink.put(string.init);
         putMessage(
             context.translation.nowHasContactWithAll,
             sortedPeers.stillLost.length);
@@ -359,19 +359,19 @@ auto report(
             .joiner(", ");
     }
 
-    if (sortedPeers.justLost.length)
+    if (sortedPeers.justLost.length > 0)
     {
         auto range = getShortPeerRange(sortedPeers.justLost);
         printError("just lost: ", range);
     }
 
-    if (sortedPeers.justReturned.length)
+    if (sortedPeers.justReturned.length > 0)
     {
         auto range = getShortPeerRange(sortedPeers.justReturned);
         printInfo("just returned: ", range);
     }
 
-    if (sortedPeers.stillLost.length)
+    if (sortedPeers.stillLost.length > 0)
     {
         auto range = getShortPeerRange(sortedPeers.stillLost);
         printError("still lost: ", range);
@@ -386,7 +386,7 @@ auto report(
 
     if (context.dryRun)
     {
-        if (body_.length)
+        if (body_.length > 0)
         {
             writeln(' ');
             writeln(body_);
@@ -398,7 +398,7 @@ auto report(
 
     bool commandSuccess;
 
-    if (context.command.length)
+    if (context.command.length > 0)
     {
         const result = runCommand(context.command, body_, loopIteration, sortedPeers);
         commandSuccess = (result.status == 0);
@@ -424,17 +424,17 @@ auto report(
 
     const batsignFailures = sendBatsign(context, body_);
 
-    if (!batsignFailures.length)
+    if (batsignFailures.length == 0)
     {
         printInfo("notification post successful");
-        return context.command.length ?
+        return (context.command.length > 0) ?
             commandSuccess :  // bothNotificationMethods is set
             true;
     }
 
     foreach (const failure; batsignFailures)
     {
-        if (failure.exceptionText.length)
+        if (failure.exceptionText.length > 0)
         {
             printError("notification post failed: ", failure.exceptionText);
             continue;
@@ -446,7 +446,7 @@ auto report(
         {
             printQuery("is the URL correct?");
         }
-        else if (failure.responseBody.length)
+        else if (failure.responseBody.length > 0)
         {
             writeln(failure.responseBody);
             stdout.flush();

@@ -168,7 +168,7 @@ void getHandshakes(ref Peer[string] peers, const string iface)
         }
 
         const timeString = line[tabPos+1..$];
-        if (!timeString.length) continue;  // when?
+        if (timeString.length == 0) continue;  // when?
 
         if (timeString[0] == '0')
         {

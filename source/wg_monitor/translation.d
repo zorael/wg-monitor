@@ -152,7 +152,7 @@ static immutable allTranslations = ()
             ++i;
 
             string slice = line.stripped;  // mutable
-            if (!slice.length || (slice[0] == '#')) continue;
+            if ((slice.length == 0) || (slice[0] == '#')) continue;
 
             try
             {
@@ -180,7 +180,7 @@ static immutable allTranslations = ()
             }
         }
 
-        if (translation.language.length) translations ~= translation;
+        if (translation.language.length > 0) translations ~= translation;
     }
 
     return translations;

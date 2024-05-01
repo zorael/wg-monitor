@@ -127,7 +127,7 @@ struct SortedPeers
      */
     auto allPresent() const
     {
-        return (!this.stillLost.length && !this.justLost.length);
+        return ((this.stillLost.length == 0) && (this.justLost.length == 0));
     }
 
     /**
@@ -169,10 +169,10 @@ struct SortedPeers
 
         alias pred = (Peer a, Peer b) => a.hash.lessThan(b.hash);
 
-        if (this.present.length) this.present = this.present.sort!pred.release();
-        if (this.justReturned.length) this.justReturned = this.justReturned.sort!pred.release();
-        if (this.stillLost.length) this.stillLost = this.stillLost.sort!pred.release();
-        if (this.justLost.length) this.justLost = this.justLost.sort!pred.release();
+        if (this.present.length > 0) this.present = this.present.sort!pred.release();
+        if (this.justReturned.length > 0) this.justReturned = this.justReturned.sort!pred.release();
+        if (this.stillLost.length > 0) this.stillLost = this.stillLost.sort!pred.release();
+        if (this.justLost.length > 0) this.justLost = this.justLost.sort!pred.release();
     }
 }
 
@@ -359,7 +359,7 @@ auto getNameFromHash(const string fullHash, const string phaseDescriptionPattern
 
         peerRep.name = slice.advancePast('+');
 
-        if (slice.length && slice[0].isDigit)
+        if ((slice.length > 0) && slice[0].isDigit)
         {
             enum asciiNumberOffset = 48;
             peerRep.phase = (slice[0] - asciiNumberOffset);

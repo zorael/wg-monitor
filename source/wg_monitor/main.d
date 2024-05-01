@@ -454,7 +454,7 @@ auto run(const string[] args, ref Context context)
             }
         }
 
-        if (context.command.length)
+        if (context.command.length > 0)
         {
             import std.path : isAbsolute;
 
@@ -476,7 +476,7 @@ auto run(const string[] args, ref Context context)
                 context.command = "./" ~ context.command;
             }
         }
-        else /*if (!context.command.length)*/
+        else /*if (context.command.length == 0)*/
         {
             batsignFileExists = resolveFilename(context.batsignFile, context.iface, Context.init.batsignFile);
 
@@ -514,7 +514,8 @@ auto run(const string[] args, ref Context context)
             return ShellReturnValue.invalidLanguage;
         }
 
-        if (context.caBundleFile.length && (!context.caBundleFile.exists || context.caBundleFile.isDir))
+        if ((context.caBundleFile.length > 0) &&
+            (!context.caBundleFile.exists || context.caBundleFile.isDir))
         {
             import std.format : format;
 
@@ -526,7 +527,7 @@ auto run(const string[] args, ref Context context)
 
         if (!peerFileExists || (!batsignFileExists && !commandExists))
         {
-            if (context.command.length && !commandExists)
+            if ((context.command.length > 0) && !commandExists)
             {
                 // Command missing when supplied is always an error
                 return ShellReturnValue.commandNotFound;
@@ -540,7 +541,7 @@ auto run(const string[] args, ref Context context)
 
         auto peerFileHashes = parsePeerFile(context.peerFile);
 
-        if (peerFileHashes.invalid.length)
+        if (peerFileHashes.invalid.length > 0)
         {
             foreach (hash; peerFileHashes.invalid)
             {
@@ -550,32 +551,33 @@ auto run(const string[] args, ref Context context)
 
         context.peerList = peerFileHashes.valid;
 
-        if (!context.peerList.length)
+        if (context.peerList.length == 0)
         {
             printError(context.peerFile, " is empty. add peer hashes to it.");
         }
 
-        if (context.command.length)
+        if (context.command.length > 0)
         {
             // No need to parse batsign file if we're using an external command
         }
-        else /*if (context.batsignFile.length)*/
+        else /*if (context.batsignFile.length > 0)*/
         {
             context.batsignURLs = parseBatsignFile(context.batsignFile);
 
-            if (!context.batsignURLs.length)
+            if (context.batsignURLs.length == 0)
             {
                 printError(context.batsignFile, " is empty. add one or more batsign URLs to it.");
             }
         }
 
         // As above, exit here to allow for both messages to be displayed
-        if (!context.peerList.length || (!context.batsignURLs.length && !commandExists))
+        if ((context.peerList.length == 0) ||
+            ((context.batsignURLs.length == 0) && !commandExists))
         {
             return ShellReturnValue.emptyFiles;
         }
 
-        if (!context.iface.length)
+        if (context.iface.length == 0)
         {
             // Intro already printed
             printError("no interface provided");
@@ -592,7 +594,7 @@ auto run(const string[] args, ref Context context)
             enum ifacePattern = "interface:     %s";
             writefln(ifacePattern, context.iface);
 
-            if (context.command.length)
+            if (context.command.length > 0)
             {
                 enum commandPattern = "command:       %s";
                 writefln(commandPattern, context.command);
@@ -607,7 +609,7 @@ auto run(const string[] args, ref Context context)
                     context.batsignURLs.length,
                     context.batsignURLs.length.plurality("url", "urls"));
 
-                if (context.caBundleFile.length)
+                if (context.caBundleFile.length > 0)
                 {
                     // Only print if a CA bundle file was actually specified
                     writeln("cacert:        ", context.caBundleFile);

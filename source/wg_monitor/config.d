@@ -141,7 +141,7 @@ auto parsePeerFile(const string peerFile)
 
         const hash = hashRaw.stripped;
 
-        if (!hash.length || (hash[0] == '#')) continue;
+        if ((hash.length == 0) || (hash[0] == '#')) continue;
         else if ((hash.length != 44) || (hash[43] != '='))
         {
             result.invalid ~= hash;
@@ -181,7 +181,7 @@ auto parseBatsignFile(const string batsignFile)
         .chomp()
         .splitter('\n')
         .map!(line => line.stripped)
-        .filter!(a => a.length && (a[0] != '#'))
+        .filter!(a => (a.length > 0) && (a[0] != '#'))
         .array;
 }
 
