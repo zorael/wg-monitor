@@ -137,8 +137,8 @@ void mainLoop(/*const*/ Context context)
         auto now = Clock.currTime;
         now.fracSecs = Duration.zero;
         const justStarted = (loopIteration == 0);
+        bool onlyReturns = true;
         bool somethingChanged;
-        bool onlyReturns;
 
         peerStepLoop:
         foreach (ref peer; peers)
@@ -208,6 +208,8 @@ void mainLoop(/*const*/ Context context)
         shouldReport |= somethingChanged;
         shouldReport |= justStarted;
         shouldReport |= shouldRemind;
+
+        onlyReturns &= (sortedPeers.justReturned.length > 0);
 
         if (shouldReport)
         {
