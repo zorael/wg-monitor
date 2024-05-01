@@ -159,9 +159,10 @@ void mainLoop(/*const*/ Context context)
             somethingChanged |= thisChanged;
 
             with (Peer.State)
-            switch (peer.state)
+            final switch (peer.state)
             {
             case present:
+            case unset:
                 // Do nothing
                 break;
 
@@ -169,7 +170,8 @@ void mainLoop(/*const*/ Context context)
                 onlyReturns &= true;
                 break;
 
-            default:
+            case stillLost:
+            case justLost:
                 onlyReturns = false;
                 break;
             }
