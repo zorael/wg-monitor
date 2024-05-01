@@ -136,6 +136,7 @@ void mainLoop(/*const*/ Context context)
 
         auto now = Clock.currTime;
         now.fracSecs = Duration.zero;
+        const justStarted = (loopIteration == 0);
         bool somethingChanged;
         bool onlyReturns;
 
@@ -190,14 +191,13 @@ void mainLoop(/*const*/ Context context)
                     peer.timestamp.hour, peer.timestamp.minute,
                     deltaString,
                     timedOut ? " (!)" : string.init,
-                    (thisChanged && (loopIteration > 0)) ? " (UPDATED)" : string.init);
+                    (thisChanged && !justStarted) ? " (UPDATED)" : string.init);
             }
         }
 
         if (context.progress) stdout.flush();
 
         const sortedPeers = SortedPeers(peers);
-        const justStarted = (loopIteration == 0);
         const timeSinceLastReport = (now - lastReportTimestamp);
         const reminderGracePeriodEnded = (timeSinceLastReport >= getReminderDelay(reminderCounter));
         const shouldRemind = (!sortedPeers.allPresent && reminderGracePeriodEnded);
