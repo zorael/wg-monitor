@@ -587,36 +587,39 @@ auto run(const string[] args, ref Context context)
 
         if (!context.reexecuted)
         {
+            enum width = 16;
+            enum pattern = "%*s%s";
+
             printInfo("using ", context.peerFile);
             printInfo("using ", context.batsignFile);
             writeln(' ');
-
-            enum ifacePattern = "interface:     %s";
-            writefln(ifacePattern, context.iface);
+            writefln(pattern, -width, "interface:", context.iface);
 
             if (context.command.length > 0)
             {
-                enum commandPattern = "command:       %s";
-                writefln(commandPattern, context.command);
+                writefln(pattern, -width, "command:", context.command);
             }
             else
             {
                 import lu.string : plurality;
 
-                enum batsignPattern = "batsign:       %d %s";
+                enum batsignPattern = "%*s%d %s";
+
                 writefln(
                     batsignPattern,
+                    -width,
+                    "batsign:",
                     context.batsignURLs.length,
                     context.batsignURLs.length.plurality("url", "urls"));
 
                 if (context.caBundleFile.length > 0)
                 {
                     // Only print if a CA bundle file was actually specified
-                    writeln("cacert:        ", context.caBundleFile);
+                    writefln(pattern, -width, "cacert:", context.caBundleFile);
                 }
             }
 
-            writeln("language:      ", context.language);
+            writefln(pattern, -width, "language:", context.language);
             writeln(' ');
             stdout.flush();
         }
