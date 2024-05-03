@@ -324,7 +324,7 @@ auto applyGetopt(
             import std.getopt : Option;
 
             static void printGetoptHelpScreen(
-                const Option[] options,
+                const Option[] allOptions,
                 const string pattern = "%*s  %*s  %s")
             {
                 size_t distanceShort;
@@ -345,20 +345,22 @@ auto applyGetopt(
                         opt.optLong.endsWith("-reminder");
                 }
 
-                foreach (const opt; options)
+                Option[] options;
+                options.reserve(allOptions.length);
+
+                foreach (const i, const opt; allOptions)
                 {
                     import std.algorithm.comparison : max;
 
                     if (shouldSkipFlag(opt)) continue;
 
+                    options ~= opt;
                     distanceShort = max(distanceShort, opt.optShort.length);
                     distanceLong = max(distanceLong, opt.optLong.length);
                 }
 
                 foreach (const opt; options)
                 {
-                    if (shouldSkipFlag(opt)) continue;
-
                     writefln(
                         pattern,
                         distanceShort,
