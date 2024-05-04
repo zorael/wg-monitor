@@ -39,4 +39,4 @@ enum WgMonitorSemVer
 /**
     SemVer pre-release string of this build.
  */
-enum WgMonitorSemVerPreRelease = "beta.1";
+enum WgMonitorSemVerPreRelease = string.init;
