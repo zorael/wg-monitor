@@ -2,9 +2,9 @@
 
 Monitors other peers in a [Wireguard VPN](https://www.wireguard.com) and sends a notification if contact with a peer is lost.
 
-The main purpose of this is to monitor Internet-connected locations for power outages, using Wireguard handshakes as a way for locations to phone home. Each location needs an always-on, always-connected computer to act as a Wireguard peer, for which something like a [Raspberry Pi Zero 2W](https://www.raspberrypi.com/products/raspberry-pi-zero-2-w) is cheap and more than sufficient.
+The main purpose of this is to monitor Internet-connected locations for power outages, using Wireguard handshakes as a way for sites to phone home. Each needs an always-on, always-connected computer to act as a Wireguard peer, for which something like a [Raspberry Pi Zero 2W](https://www.raspberrypi.com/products/raspberry-pi-zero-2-w) is cheap and more than sufficient. ([example hardware setup](https://github.com/zorael/wg-monitor/wiki/Example-hardware-setup))
 
-In a hub-and-spoke Wireguard configuration, this should be run on the hub server, ideally with an additional instance on (at least) one other geographically-disconnected peer to monitor the hub. In other configurations, it can be run on any peer with visibility of other peers, but a secondary instance monitoring the first is recommended in any setup.
+In a hub-and-spoke Wireguard configuration, this should be run on the hub server, ideally with an additional instance on (at least) one other geographically disconnected peer to monitor the hub. In other configurations, it can be run on any peer with visibility of other peers, but a secondary instance monitoring the first is recommended in any setup.
 
 Peers must have a `PersistentKeepalive` setting in their Wireguard configuration with a value *comfortably lower* than the peer timeout of this program. This timeout is **600 seconds** by default, but can be overridden via a command-line switch.
 
@@ -108,7 +108,7 @@ If no `WorkingDirectory` is declared, external notification commands that make u
 $ sudo systemctl enable --now wg-monitor@[interface]
 ```
 
-It is meant to work well with `wg-quick@.service`. If other methods of setting up the Wireguard network are used, the service file may have to be modified accordingly, or skipped altogether in favour of other solutions.
+It is meant to work well with `wg-quick@.service`. If a different method of setting up the Wireguard network is used, the service file may have to be modified accordingly, or skipped altogether in favour of other solutions.
 
 ## roadmap
 
