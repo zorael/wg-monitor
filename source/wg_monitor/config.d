@@ -83,7 +83,7 @@ auto handleGetopt(const string[] args, out Context context)
         "fourth-reminder",
             string.init, //"Fourth notification reminder delay in seconds",
             &fourthReminder,
-        "further-reminder",
+        "further-reminders",
             string.init, //"Further notification reminder delay in seconds",
             &furtherReminders,
         "wait-for-interface",

@@ -344,7 +344,8 @@ auto applyGetopt(
                             "--version",
                             "--cacert",
                             "--both") ||
-                        opt.optLong.endsWith("-reminder");
+                        opt.optLong.endsWith("-reminder") ||
+                        opt.optLong.endsWith("-reminders");
                 }
 
                 Option[] options;
