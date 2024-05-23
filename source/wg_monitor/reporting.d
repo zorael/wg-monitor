@@ -245,9 +245,11 @@ auto composeNotificationBody(
 
             if (peer.wasNeverSeen)
             {
+                const notSeenSinceRestart = context.translation.notSeenSinceRestart
+                    .replace(cast(string)ReplaceTokens.serverName, context.serverName);
                 const line = pattern.format(
                     getNameFromHash(peer.hash, context.translation.phaseDescription),
-                    context.translation.notSeenSinceRestart);
+                    notSeenSinceRestart);
                 sink.put(line);
             }
             else
