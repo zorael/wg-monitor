@@ -40,6 +40,8 @@ auto handleGetopt(const string[] args, out Context context)
     int firstReminder = -1;
     int secondReminder = -1;
     int thirdReminder = -1;
+    int fourthReminder = -1;
+    int furtherReminders = -1;
     auto mutArgs = args.dup;
 
     auto result = std.getopt.getopt(mutArgs,
@@ -78,6 +80,12 @@ auto handleGetopt(const string[] args, out Context context)
         "third-reminder",
             string.init, //"Third notification reminder delay in seconds",
             &thirdReminder,
+        "fourth-reminder",
+            string.init, //"Fourth notification reminder delay in seconds",
+            &fourthReminder,
+        "further-reminder",
+            string.init, //"Further notification reminder delay in seconds",
+            &furtherReminders,
         "wait-for-interface",
             "Wait for the Wireguard interface to show up",
             &context.waitForInterface,
@@ -99,9 +107,31 @@ auto handleGetopt(const string[] args, out Context context)
 
     if (peerTimeout >= 0) context.durations.peerTimeout = peerTimeout.seconds;
     if (sleepBetweenChecks > 0) context.durations.sleepBetweenChecks = sleepBetweenChecks.seconds;
-    if (firstReminder > 0) context.durations.firstReminder = firstReminder.seconds;
-    if (secondReminder > 0) context.durations.secondReminder = secondReminder.seconds;
-    if (thirdReminder > 0) context.durations.thirdReminder = thirdReminder.seconds;
+
+    if (firstReminder > 0)
+    {
+        context.durations.firstReminder = firstReminder.seconds;
+    }
+
+    if ((secondReminder > 0) && (secondReminder > firstReminder))
+    {
+        context.durations.secondReminder = secondReminder.seconds;
+    }
+
+    if ((thirdReminder > 0) && (thirdReminder > secondReminder))
+    {
+        context.durations.thirdReminder = thirdReminder.seconds;
+    }
+
+    if ((fourthReminder > 0) && (fourthReminder > thirdReminder))
+    {
+        context.durations.fourthReminder = fourthReminder.seconds;
+    }
+
+    if ((furtherReminders > 0) && (furtherReminders > fourthReminder))
+    {
+        context.durations.furtherReminders = furtherReminders.seconds;
+    }
     return result;
 }
 

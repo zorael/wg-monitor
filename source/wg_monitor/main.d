@@ -61,20 +61,22 @@ void mainLoop(/*const*/ Context context)
         }
     }
 
-    const Duration[3] reportPeriodicity =
+    const Duration[5] reportReminders =
     [
         context.durations.firstReminder,
         context.durations.secondReminder,
         context.durations.thirdReminder,
+        context.durations.fourthReminder,
+        context.durations.furtherReminders,
     ];
 
     auto getReminderDelay(const size_t reminderCounter)
     {
         import std.algorithm.comparison : min;
 
-        enum upperBound = reportPeriodicity.length + (-1);
+        enum upperBound = reportReminders.length + (-1);
         immutable i = min(reminderCounter, upperBound);
-        return reportPeriodicity[i];
+        return reportReminders[i];
     }
 
     Peer[string] peers;
