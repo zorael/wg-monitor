@@ -89,6 +89,11 @@ struct Translation
     string nowHasContactWithAll = "nowHasContactWithAll";
 
     /**
+        Translation for the string used as a subject in batsign emails.
+     */
+    string subject = "subject";
+
+    /**
         Inherits lines from the translations statically imported (and parsed)
         from the `translations.txt` file.
 

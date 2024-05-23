@@ -12,6 +12,7 @@ notSeenSinceRestart=not seen since restart of $serverName
 lastSeen=last seen $timestamp
 back=back $timestamp
 nowHasContactWithAll=All peers in contact. ($peerList)
+subject=Report from $serverName
 
 language=swedish
 peerSingular=nod
@@ -25,6 +26,7 @@ notSeenSinceRestart=ej synts sedan omstart av $serverName
 lastSeen=sågs senast $timestamp
 back=tillbaka $timestamp
 nowHasContactWithAll=Har därmed kontakt med alla noder. ($peerList)
+subject=Rapport från $serverName
 
 language=japanese
 peerSingular=
@@ -38,6 +40,7 @@ notSeenSinceRestart=$serverNameの再起動以来、連絡がありません
 lastSeen=$timestampでロスト
 back=$timestampに確認
 nowHasContactWithAll=すべてのピアと接触しています。（$peerList）
+subject=$serverNameからの報告
 
 language=english-minimal
 peerSingular=
@@ -51,6 +54,7 @@ notSeenSinceRestart=never seen
 lastSeen=seen $timestamp
 back=back $timestamp
 nowHasContactWithAll=All OK. ($peerList)
+subject=Report ($serverName)
 
 language=debug
 # should be left empty

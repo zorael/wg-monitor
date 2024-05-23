@@ -348,7 +348,7 @@ auto report(
 {
     import wg_monitor.cout;
     import wg_monitor.peer : Peer;
-    import std.array : join;
+    import std.array : join, replace;
     import std.stdio : stdout, writeln;
 
     static auto getShortPeerRange(const Peer[] peers)
@@ -424,7 +424,9 @@ auto report(
         if (!context.bothNotificationMethods) return commandSuccess;
     }
 
-    const batsignFailures = sendBatsign(context, body_);
+    const subject = context.translation.subject.replace("$serverName", context.serverName);
+    const subjectedBody = "Subject: " ~ subject ~ '\n' ~ body_;
+    const batsignFailures = sendBatsign(context, subjectedBody);
 
     if (batsignFailures.length == 0)
     {
