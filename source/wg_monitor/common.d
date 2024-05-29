@@ -26,6 +26,11 @@ public:
 enum shortHashLength = 7;
 
 
+// Statically enforce a sane short hash length.
+static assert(((shortHashLength > 0) && (shortHashLength <= 44)),
+    "shortHashLength may not be longer than a full peer hash (44 characters)");
+
+
 // NeedSudoException
 /**
     Exception thrown when a command fails due to lack of permissions.
