@@ -324,29 +324,46 @@ auto blockResolvingServerName(ref Context context)
 
     Params:
         args = Command-line arguments passed to the program.
-        context = out-reference to a new [wg_monitor.context.Context|Context],
-            which will be populated according to the command-line arguments.
-        retval = out-reference to a [wg_monitor.common.ShellReturnValue|ShellReturnValue]
-            to exit with, should it be necessary.
 
     Returns:
-        A `bool` indicating whether the program should exit.
+        A Voldemort struct containing a [wg_monitor.context.Context][Context]
+        and an optional return value.
  */
-auto applyGetopt(
-    const string[] args,
-    out Context context,
-    out ShellReturnValue retval)
+auto applyGetopt(const string[] args)
 {
     import std.getopt : GetOptException;
     import std.stdio : stdout, writefln, writeln;
 
+    /**
+        Voldemort.
+     */
+    static struct GetoptResults
+    {
+        /**
+            Context struct to populate with values from the passed arguments.
+         */
+        Context context;
+
+        /**
+            Return value to exit the program with, if it should exit.
+         */
+        ShellReturnValue retval;
+
+        /**
+            Whether the program should exit.
+         */
+        bool shouldExit;
+    }
+
     scope(exit) stdout.flush();
+
+    GetoptResults results;
 
     try
     {
         import wg_monitor.config : handleGetopt;
 
-        const getoptResults = handleGetopt(args, context);
+        const getoptResults = handleGetopt(args, results.context);
 
         if (getoptResults.helpWanted)
         {
@@ -422,23 +439,22 @@ auto applyGetopt(
             printGetoptHelpScreen(getoptResults.options);
             writeln(' ');
             writefln(languagePattern, allTranslationLanguageNames);
-            retval = ShellReturnValue.success;
-            return true;
+            results.retval = ShellReturnValue.success;
+            results.shouldExit = true;
         }
-
-        return false;
     }
     catch (GetOptException e)
     {
+        // Some other getopt error, such as an invalid flag passed
         printProgramVersion();
         writeln(' ');
         printError(e.msg);
         printGetoptInfo();
-        retval = ShellReturnValue.getoptFailure;
-        return true;
+        results.retval = ShellReturnValue.getoptFailure;
+        results.shouldExit = true;
     }
 
-    assert(0, "unreachable");
+    return results;
 }
 
 
@@ -793,19 +809,17 @@ auto tryRun(const string[] args)
 {
     try
     {
-        Context context;
-        ShellReturnValue retval;
-        const shouldExit = applyGetopt(args, context, retval);
+        auto results = applyGetopt(args);
 
-        if (shouldExit) return retval;
+        if (results.shouldExit) return results.retval;
 
-        if (context.showVersionAndExit)
+        if (results.context.showVersionAndExit)
         {
             printProgramVersion();
             return ShellReturnValue.success;
         }
 
-        return run(args, context);
+        return run(args, results.context);
     }
     catch (Exception e)
     {
