@@ -43,7 +43,7 @@ public:
      */
     static struct Durations
     {
-        import core.time : Duration, hours, minutes, seconds, weeks;
+        import core.time : Duration, days, hours, minutes, weeks;
 
         /**
             A peer is considered lost after this amount of time has passed
@@ -66,19 +66,19 @@ public:
             How long to wait before sending the second reminder, after a peer has
             been lost.
          */
-        Duration secondReminder = 24.hours;
+        Duration secondReminder = 1.days;
 
         /**
             How long to wait before sending the third reminder, after a peer has
             been lost.
          */
-        Duration thirdReminder = 48.hours;
+        Duration thirdReminder = 2.days;
 
         /**
             How long to wait before sending the fourth reminder, after a peer has
             been lost.
          */
-        Duration fourthReminder = 72.hours;
+        Duration fourthReminder = 3.days;
 
         /**
             How long to wait before and between sending further reminders, after
