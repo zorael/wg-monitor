@@ -147,13 +147,15 @@ auto handleGetopt(const string[] args, out Context context)
 
     Returns:
         A Voldemort result struct.
+
+    See_Also:
+        [parseFileIntoStringArray]
  */
 auto parsePeerFile(const string peerFile)
 {
-    import std.algorithm.iteration : splitter;
-    import std.file : readText;
-    import std.string : chomp;
-
+    /**
+        Voldemort.
+     */
     static struct PeerFileHashes
     {
         bool[string] valid;
@@ -161,25 +163,24 @@ auto parsePeerFile(const string peerFile)
     }
 
     PeerFileHashes result;
-    auto peerLineRange = peerFile
-        .readText()  // TOCTTOU
-        .chomp()
-        .splitter('\n');
+    const peerLines = parseFileIntoStringArray(peerFile);
 
-    foreach (const hashRaw; peerLineRange)
+    /*
+        Walk all lines and validate them as peer hashes.
+        Add them to result.valid if they are, otherwise to result.invalid.
+     */
+    foreach (const line; peerLines)
     {
-        import lu.string : stripped;
-
-        const hash = hashRaw.stripped;
-
-        if ((hash.length == 0) || (hash[0] == '#')) continue;
-        else if ((hash.length != 44) || (hash[43] != '='))
+        if ((line.length == 44) && (line[43] == '='))
         {
-            result.invalid ~= hash;
-            continue;
+            // Seems to possibly be a hash?
+            result.valid[line] = true;
         }
-
-        result.valid[hash] = true;
+        else
+        {
+            // Definitely not a hash
+            result.invalid ~= line;
+        }
     }
 
     return result;
@@ -198,22 +199,53 @@ auto parsePeerFile(const string peerFile)
 
     See_Also:
         https://batsign.me
+        [parseFileIntoStringArray]
  */
 auto parseBatsignFile(const string batsignFile)
 {
-    import lu.string : stripped;
-    import std.algorithm.iteration : filter, map, splitter;
-    import std.array : array;
+    return parseFileIntoStringArray(batsignFile);
+}
+
+
+// parseFileIntoStringArray
+/**
+    Helper function to parse a file into an array of strings.
+
+    Commented and empty lines are skipped. Mid-line comments are also cropped out.
+
+    Params:
+        filename = Path to the file to parse.
+
+    Returns:
+        An array of strings.
+ */
+private auto parseFileIntoStringArray(const string filename)
+{
+    import std.algorithm.iteration : splitter;
     import std.file : readText;
     import std.string : chomp;
 
-    return batsignFile
+    string[] entries;
+
+    auto range = filename
         .readText()
         .chomp()
-        .splitter('\n')
-        .map!(line => line.stripped)
-        .filter!(a => (a.length > 0) && (a[0] != '#'))
-        .array;
+        .splitter('\n');
+
+    foreach (const line; range)
+    {
+        import lu.string : advancePast, stripped;
+        import std.typecons : Flag, No, Yes;
+
+        string slice = line.stripped;  // mutable
+        if ((slice.length == 0) || (slice[0] == '#')) continue;  // empty line or comment
+
+        // Advance past any mid-line comment octothorpes
+        const entry = slice.advancePast('#', Yes.inherit).stripped;
+        entries ~= entry;
+    }
+
+    return entries;
 }
 
 
