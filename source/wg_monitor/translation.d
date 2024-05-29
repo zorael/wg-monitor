@@ -138,9 +138,10 @@ static immutable allTranslations = ()
 
     // Read the translations.txt file at compile-time
     enum translationsOnFile = cast(string)import("translations.txt");
+    enum languageSeparator = "\n\n";  // double-newlines separate languages
 
     Translation[] translations;
-    auto translationRange = translationsOnFile.splitter("\n\n");
+    auto translationRange = translationsOnFile.splitter(languageSeparator);
 
     foreach (const translationEntry; translationRange)
     {
