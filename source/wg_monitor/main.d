@@ -119,6 +119,11 @@ void mainLoop(/*const*/ Context context)
             inner:
             while (true)
             {
+                import core.thread : Thread;
+                import core.time : seconds;
+
+                static immutable retryDelay = 10.seconds;
+
                 try
                 {
                     // Keep trying
@@ -130,11 +135,13 @@ void mainLoop(/*const*/ Context context)
                 }
                 catch (NoSuchInterfaceException _)
                 {
-                    import core.thread : Thread;
-                    import core.time : seconds;
-
-                    static immutable suddenWaitForInterfaceWait = 10.seconds;
-                    Thread.sleep(suddenWaitForInterfaceWait);
+                    Thread.sleep(retryDelay);
+                    //continue inner;
+                }
+                catch (Exception e)
+                {
+                    printError(e.msg);
+                    Thread.sleep(retryDelay);
                     //continue inner;
                 }
             }
