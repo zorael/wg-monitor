@@ -35,6 +35,7 @@ auto handleGetopt(const string[] args, out Context context)
     import core.time : seconds;
     static import std.getopt;
 
+    // Integers to hold durations
     int peerTimeout = -1;
     int sleepBetweenChecks = -1;
     int firstReminder = -1;
@@ -93,7 +94,7 @@ auto handleGetopt(const string[] args, out Context context)
             "Print progress messages",
             &context.progress,
         "l|language",
-            "Notification language, default " ~ context.language,
+            "Notification language, default " ~ context.language,  // context is Context.init
             &context.language,
         "reexec",
             string.init,
@@ -252,7 +253,7 @@ auto resolveFilename(
 
     if (filename.exists) return true;
 
-    const filenameExtension = defaultFilename.extension;
+    const filenameExtension = defaultFilename.extension;  // cache it
 
     const cwdIfaceFile = text(
         iface,
@@ -281,10 +282,12 @@ auto resolveFilename(
     {
         if (thisFilename.exists)
         {
+            // File found; return true
             filename = thisFilename;
             return true;
         }
     }
 
+    // If we're here, no file was found
     return false;
 }

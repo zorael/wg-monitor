@@ -172,6 +172,7 @@ void getHandshakes(ref Peer[string] peers, const string iface)
 
         if (timeString[0] == '0')
         {
+            // Unset timestamp.
             peer.wasNeverSeen = true;
             continue;
         }

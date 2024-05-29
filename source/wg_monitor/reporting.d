@@ -42,10 +42,24 @@ auto sendBatsign(const Context context, const string body_)
     static string[string] headers;
     headers["Content-Length"] = body_.length.toAlpha();
 
+    /**
+        Voldemort.
+     */
     static struct Failure
     {
+        /**
+            HTTP response code.
+         */
         int code;
+
+        /**
+            HTTP response body.
+         */
         string responseBody;
+
+        /**
+            Message of thrown exception.
+         */
         string exceptionText;
 
         this(int code, string responseBody)
@@ -62,6 +76,10 @@ auto sendBatsign(const Context context, const string body_)
 
     Failure[] failures;
 
+    /*
+        Walk through each Batsign URL and issue a POST request.
+        Save failed attempts in `failures` to be returned.
+     */
     foreach (const url; context.batsignURLs)
     {
         import requests : Request;
@@ -80,12 +98,15 @@ auto sendBatsign(const Context context, const string body_)
             if ((res.code < 200) || (res.code >= 300))
             {
                 import std.string : chomp;
+
+                // Unexpected response code
                 const responseBody = cast(string)res.responseBody;
                 failures ~= Failure(res.code, responseBody.chomp());
             }
         }
         catch (Exception e)
         {
+            // Some other failure
             failures ~= Failure(e.msg);
         }
     }
@@ -130,6 +151,9 @@ auto runCommand(
     import std.conv : to;
     import std.process : execute;
 
+    /**
+        Concatenates the hashes of the peers into a single string, separated by spaces.
+     */
     static auto concatenate(const Peer[] peers)
     {
         import std.algorithm.iteration : map;
@@ -196,6 +220,9 @@ auto composeNotificationBody(
     Appender!(string[]) sink;
     sink.reserve(32);  // number of peers + upward of 7 extra lines
 
+    /**
+        Puts a message into the sink, replacing tokens with the appropriate values.
+     */
     void putMessage(
         const string translationLine,
         const size_t numPeers)
@@ -232,6 +259,10 @@ auto composeNotificationBody(
         sink.put(string.init);
     }
 
+    /**
+        Puts a table of peers into the sink, with timestamps, replacing tokens
+        with the appropriate values.
+     */
     void putPeerTable(
         const Peer[] peers,
         const string wording)
@@ -268,11 +299,12 @@ auto composeNotificationBody(
 
     if (loopIteration == 0)
     {
+        // First loop; program just started
         if (context.translation.powerRestored.length > 0)
         {
             import std.array : replace;
 
-            // No need to go through the whole putMessage rigmarole for this one
+            // No need to go through the whole of putMessage
             const message = context.translation.powerRestored
                 .replace(cast(string)ReplaceTokens.serverName, context.serverName);
             sink.put(message);
@@ -282,6 +314,7 @@ auto composeNotificationBody(
 
     if ((sortedPeers.justLost.length > 0) && (context.translation.justLostContactWith.length > 0))
     {
+        // Some peers were just lost
         putMessage(
             context.translation.justLostContactWith,
             sortedPeers.justLost.length);
@@ -292,6 +325,7 @@ auto composeNotificationBody(
 
     if ((sortedPeers.justReturned.length > 0) && (context.translation.justRegainedContactWith.length > 0))
     {
+        // Some peers just returned
         if (sink.data.length > 0) sink.put(string.init);
 
         putMessage(
@@ -304,6 +338,7 @@ auto composeNotificationBody(
 
     if ((sortedPeers.stillLost.length > 0) && (context.translation.stillMissingContactWith.length > 0))
     {
+        // Some peers are still lost
         if (sink.data.length > 0) sink.put(string.init);
 
         putMessage(
@@ -316,7 +351,8 @@ auto composeNotificationBody(
 
     if (sortedPeers.allPresent && (context.translation.nowHasContactWithAll.length > 0))
     {
-        /*if (sink.data.length > 0)*/ sink.put(string.init);
+        // All are present
+        /*if (sink.data.length > 0)*/ sink.put(string.init);  // at least one returned, sink cannot be empty
         putMessage(
             context.translation.nowHasContactWithAll,
             sortedPeers.stillLost.length);
@@ -351,6 +387,9 @@ auto report(
     import std.array : join, replace;
     import std.stdio : stdout, writeln;
 
+    /**
+        Formats an array of peers into a comma-separated range of shortened hashes.
+     */
     static auto getShortPeerRange(const Peer[] peers)
     {
         import wg_monitor.common : shortHashLength;
@@ -388,6 +427,7 @@ auto report(
 
     if (context.dryRun)
     {
+        // Dry run, so print the notification to the terminal instead
         if (body_.length > 0)
         {
             writeln(' ');
@@ -436,6 +476,7 @@ auto report(
             true;
     }
 
+    // Handle any failures
     foreach (const failure; batsignFailures)
     {
         if (failure.exceptionText.length > 0)

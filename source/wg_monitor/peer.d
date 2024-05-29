@@ -305,6 +305,9 @@ unittest
 
     Returns:
         A Voldemort representation of a peer in terms of naming.
+
+    See_Also:
+        https://github.com/zorael/wg-monitor/wiki/Humanly%E2%80%90readable-peers
  */
 auto getNameFromHash(const string fullHash, const string phaseDescriptionPattern)
 {
@@ -312,6 +315,9 @@ auto getNameFromHash(const string fullHash, const string phaseDescriptionPattern
     import lu.string : advancePast;
     import std.string : indexOf;
 
+    /**
+        Voldemort.
+     */
     static struct PeerRepresentation
     {
         string name;
@@ -357,6 +363,7 @@ auto getNameFromHash(const string fullHash, const string phaseDescriptionPattern
     {
         import std.ascii : isDigit;
 
+        // + encountered; see if it is a phase indicator
         peerRep.name = slice.advancePast('+');
 
         if ((slice.length > 0) && slice[0].isDigit)

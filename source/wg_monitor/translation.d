@@ -136,6 +136,7 @@ static immutable allTranslations = ()
 {
     import std.algorithm.iteration : splitter;
 
+    // Read the translations.txt file at compile-time
     enum translationsOnFile = cast(string)import("translations.txt");
 
     Translation[] translations;
@@ -146,7 +147,7 @@ static immutable allTranslations = ()
         auto lineRange = translationEntry.splitter('\n');
         Translation translation;
         translation.language = string.init;
-        uint i;
+        uint i;  /// Manual line counter, since splitter doesn't provide one
 
         foreach (const line; lineRange)
         {
@@ -154,7 +155,7 @@ static immutable allTranslations = ()
             import lu.objmanip : setMemberByName;
             import std.format : format;
 
-            ++i;
+            ++i;  // Prefix increment so as to have the first line number be 1
 
             string slice = line.stripped;  // mutable
             if ((slice.length == 0) || (slice[0] == '#')) continue;

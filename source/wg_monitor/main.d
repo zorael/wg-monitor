@@ -38,6 +38,9 @@ void mainLoop(/*const*/ Context context)
     import std.stdio : stdout;
     import core.time : Duration;
 
+    /**
+        Prints the starting message.
+     */
     void printPreamble()
     {
         enum monitorMessagePattern = "monitoring %d %s, probing every %s.";
@@ -61,6 +64,9 @@ void mainLoop(/*const*/ Context context)
         }
     }
 
+    /**
+        The reminder durations, in order of appearance in the report.
+     */
     const Duration[5] reportReminders =
     [
         context.durations.firstReminder,
@@ -70,6 +76,9 @@ void mainLoop(/*const*/ Context context)
         context.durations.furtherReminders,
     ];
 
+    /**
+        Returns the reminder delay for the given reminder counter.
+     */
     auto getReminderDelay(const size_t reminderCounter)
     {
         import std.algorithm.comparison : min;
@@ -94,10 +103,12 @@ void mainLoop(/*const*/ Context context)
         import core.thread : Thread;
         import core.time : Duration;
 
+        // Don't sleep if there were errors; otherwise sleep after each iteration
         scope(success) Thread.sleep(context.durations.sleepBetweenChecks);
 
         try
         {
+            // This throws on failure
             getHandshakes(peers, context.iface);
         }
         catch (NoSuchInterfaceException e)
@@ -139,19 +150,20 @@ void mainLoop(/*const*/ Context context)
         auto now = Clock.currTime;
         now.fracSecs = Duration.zero;
         const justStarted = (loopIteration == 0);
-        bool onlyReturns = true;
         bool somethingChanged;
+        bool onlyReturns = true;  /// The only change were of returning peers
 
         peerStepLoop:
         foreach (ref peer; peers)
         {
             import wg_monitor.peer : step;
 
+            // Skip peers not in the list
             if (peer.hash !in context.peerList) continue peerStepLoop;
 
             if (peer.wasNeverSeen)
             {
-                // Peer has not yet been seen. Set the timestamp to the loop start
+                // Peer has not yet been seen. Override the timestamp to that of the loop start
                 peer.timestamp = loopStart;
             }
 
@@ -165,15 +177,17 @@ void mainLoop(/*const*/ Context context)
             {
             case present:
             case unset:
-                // Do nothing
+                // Ignore
                 break;
 
             case justReturned:
+                // Confirm onlyReturns
                 onlyReturns &= true;
                 break;
 
             case stillLost:
             case justLost:
+                // Falsify onlyReturns
                 onlyReturns = false;
                 break;
             }
@@ -211,6 +225,7 @@ void mainLoop(/*const*/ Context context)
         shouldReport |= justStarted;
         shouldReport |= shouldRemind;
 
+        // Falsify onlyReturns if there actually were no returns (since the variable is default true)
         onlyReturns &= (sortedPeers.justReturned.length > 0);
 
         if (shouldReport)
@@ -221,13 +236,14 @@ void mainLoop(/*const*/ Context context)
 
             if (onlyReturns)
             {
-                // Keep lastReportTimestamp and reminderCounter as-is if there were only returns
+                // The only change was of peers returning
+                // Keep lastReportTimestamp and reminderCounter as-is
             }
             else
             {
                 if (success) lastReportTimestamp = now;
 
-                // Do the following even if the report failed
+                // Do the following even if the report failed (success false)
                 if (sortedPeers.allPresent) reminderCounter = 0;
                 else if (shouldRemind) ++reminderCounter;
             }
@@ -241,7 +257,7 @@ void mainLoop(/*const*/ Context context)
 // blockResolvingServerName
 /**
     Tries to resolve the server name from the public key, blocking until the
-    interface shows up if necessary.
+    interface shows up (if necessary).
 
     Params:
         context = Reference to the [wg_monitor.context.Context|Context] struct.
@@ -261,6 +277,7 @@ auto blockResolvingServerName(ref Context context)
     }
     catch (NoSuchInterfaceException e)
     {
+        // Rethrow if we weren't passed --wait-for-interface
         if (!context.waitForInterface) throw e;
 
         printError(e.msg);
@@ -287,6 +304,10 @@ auto blockResolvingServerName(ref Context context)
             }
         }
     }
+    /*catch (Exception _)
+    {
+        // Let exceptions pass
+    }*/
 }
 
 
@@ -325,6 +346,9 @@ auto applyGetopt(
             import wg_monitor.translation : allTranslationLanguageNames;
             import std.getopt : Option;
 
+            /**
+                Prints the `--help` screen.
+             */
             static void printGetoptHelpScreen(
                 const Option[] allOptions,
                 const string pattern = "%*s  %*s  %s")
@@ -332,6 +356,9 @@ auto applyGetopt(
                 size_t distanceShort;
                 size_t distanceLong;
 
+                /**
+                    Returns true if the passed flag should be omitted from the `--help` screen.
+                 */
                 static auto shouldSkipFlag(const Option opt)
                 {
                     import std.algorithm.comparison : among;
@@ -351,7 +378,14 @@ auto applyGetopt(
                 Option[] options;
                 options.reserve(allOptions.length);
 
-                foreach (const i, const opt; allOptions)
+                /**
+                    Calculate the maximum format string distance for the short
+                    and long flags. This is used to align the flags in the output.
+
+                    Additionally populate the `options` array with the flags that
+                    should actually be printed.
+                 */
+                foreach (const opt; allOptions)
                 {
                     import std.algorithm.comparison : max;
 
@@ -426,6 +460,7 @@ auto run(const string[] args, ref Context context)
 
     if (!context.reexecuted)
     {
+        // Only print the start up message on the initial run (reexecuted false)
         printProgramVersion();
         writeln(' ');
     }
@@ -437,11 +472,10 @@ auto run(const string[] args, ref Context context)
         import std.stdio : File;
         import core.sys.posix.unistd : getuid;
 
-        const userIsRoot = (getuid() == 0);
-
         bool commandExists;
         bool batsignFileExists;
         const peerFileExists = resolveFilename(context.peerFile, context.iface, Context.init.peerFile);
+        const userIsRoot = (getuid() == 0);
 
         if (!peerFileExists)
         {
@@ -463,6 +497,7 @@ auto run(const string[] args, ref Context context)
         {
             import std.path : isAbsolute;
 
+            // An external command was supplied, which overrides the batsign file
             commandExists = (context.command.exists && !context.command.isDir);
 
             if (!commandExists)
@@ -483,6 +518,7 @@ auto run(const string[] args, ref Context context)
         }
         else /*if (context.command.length == 0)*/
         {
+            // No external command was supplied; check for batsign file
             batsignFileExists = resolveFilename(context.batsignFile, context.iface, Context.init.batsignFile);
 
             if (!batsignFileExists)
@@ -503,6 +539,7 @@ auto run(const string[] args, ref Context context)
             }
         }
 
+        // Resolve translations, if possible
         const languageFound = context.translation.inherit(context.language);
 
         if (!languageFound)
@@ -510,6 +547,7 @@ auto run(const string[] args, ref Context context)
             import wg_monitor.translation : allTranslationLanguageNames;
             import std.format : format;
 
+            // It wasn't.
             enum notFoundPattern = "language '%s' not found";
             enum availablePattern = "available languages: %-(%s, %)";
             const notFoundMessage = notFoundPattern.format(context.language);
@@ -524,6 +562,7 @@ auto run(const string[] args, ref Context context)
         {
             import std.format : format;
 
+            // cacert.pem supplied but it doesn't exist or is a directory
             enum notFoundPattern = "cacert file '%s' not found";
             const notFoundMessage = notFoundPattern.format(context.caBundleFile);
             printError(notFoundMessage);
@@ -532,6 +571,7 @@ auto run(const string[] args, ref Context context)
 
         if (!peerFileExists || (!batsignFileExists && !commandExists))
         {
+            // Insufficient files to proceed
             if ((context.command.length > 0) && !commandExists)
             {
                 // Command missing when supplied is always an error
@@ -548,6 +588,7 @@ auto run(const string[] args, ref Context context)
 
         if (peerFileHashes.invalid.length > 0)
         {
+            // Print invalid hashes, but continue
             foreach (hash; peerFileHashes.invalid)
             {
                 printError("invalid hash ignored: ", hash);
@@ -558,19 +599,24 @@ auto run(const string[] args, ref Context context)
 
         if (context.peerList.length == 0)
         {
+            // The peer list is effectively empty and we cannot proceed.
+            // Print error here, return later to allow for more messages to be displayed
             printError(context.peerFile, " is empty. add peer hashes to it.");
         }
 
         if (context.command.length > 0)
         {
-            // No need to parse batsign file if we're using an external command
+            // An external command was provided
+            // No need to parse batsign file
         }
         else /*if (context.batsignFile.length > 0)*/
         {
+            // No external command; parse batsign file
             context.batsignURLs = parseBatsignFile(context.batsignFile);
 
             if (context.batsignURLs.length == 0)
             {
+                // Print error here, return below
                 printError(context.batsignFile, " is empty. add one or more batsign URLs to it.");
             }
         }
@@ -592,6 +638,7 @@ auto run(const string[] args, ref Context context)
 
         if (!context.reexecuted)
         {
+            // Print the configuration
             enum width = 16;
             enum pattern = "%*s%s";
 
@@ -604,10 +651,11 @@ auto run(const string[] args, ref Context context)
             {
                 writefln(pattern, -width, "command:", context.command);
             }
-            else
+            else /*if (context.command.length == 0)*/
             {
                 import lu.string : plurality;
 
+                // Print the number of batsign URLs
                 enum batsignPattern = "%*s%d %s";
 
                 writefln(
@@ -619,7 +667,7 @@ auto run(const string[] args, ref Context context)
 
                 if (context.caBundleFile.length > 0)
                 {
-                    // Only print if a CA bundle file was actually specified
+                    // Only print cacert filename if one was actually provided
                     writefln(pattern, -width, "cacert:", context.caBundleFile);
                 }
             }
@@ -629,6 +677,8 @@ auto run(const string[] args, ref Context context)
             stdout.flush();
         }
 
+        // Resolve the Wireguard peer representation of this server peer
+        // It blocks until it succeeds, or throws if it fails
         blockResolvingServerName(context);
 
         if (context.dryRun)
@@ -636,18 +686,21 @@ auto run(const string[] args, ref Context context)
             printInfo("dry run: not sending notifications");
         }
 
+        // Finally, start main loop
         mainLoop(context);
     }
     catch (NeedSudoException e)
     {
         import std.process : environment, execvp;
 
+        // Superuser permissions are required
         if (context.reexecuted)
         {
             printError("still fails; exiting");
             return ShellReturnValue.otherPermissionsError;
         }
 
+        // exec with sudo
         printError(e.msg);
         printInfo("re-executing with sudo.");
 
@@ -665,6 +718,7 @@ auto run(const string[] args, ref Context context)
     {
         import std.process : environment;
 
+        // The wg command was not found
         const wgOverridden = (environment.get("WG", string.init).length > 0);
 
         printError(e.msg);
@@ -681,11 +735,13 @@ auto run(const string[] args, ref Context context)
     }
     catch (NetworkException e)
     {
+        // A non-specific network error occurred
         printError(e.msg);
         return ShellReturnValue.networkError;
     }
     catch (UTFException e)
     {
+        // There were issues reading the peer or batsign file as UTF-8 text
         printError("failed to parse peer or batsign file");
         printQuery("was a non-text file read?");
         return ShellReturnValue.badFiles;
