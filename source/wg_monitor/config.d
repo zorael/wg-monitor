@@ -13,10 +13,8 @@ private:
 
 import wg_monitor.context : Context;
 
-public:
 
-
-// handleGetopt
+// parseGetopt
 /**
     Calls [std.getopt.getopt|getopt], parses the passed arguments and returns
     the results.
@@ -30,7 +28,7 @@ public:
     Returns:
         The results of [std.getopt.getopt|getopt].
  */
-auto handleGetopt(const string[] args, out Context context)
+auto parseGetopt(const string[] args, out Context context)
 {
     import core.time : seconds;
     static import std.getopt;
@@ -133,7 +131,213 @@ auto handleGetopt(const string[] args, out Context context)
     {
         context.durations.furtherReminders = furtherReminders.seconds;
     }
+
     return result;
+}
+
+
+// parseFileIntoStringArray
+/**
+    Helper function to parse a file into an array of strings.
+
+    Commented and empty lines are skipped. Mid-line comments are also cropped out.
+
+    Params:
+        filename = Path to the file to parse.
+
+    Returns:
+        An array of strings.
+ */
+auto parseFileIntoStringArray(const string filename)
+{
+    import std.algorithm.iteration : splitter;
+    import std.file : readText;
+    import std.string : chomp;
+
+    string[] entries;
+
+    auto range = filename
+        .readText()
+        .chomp()
+        .splitter('\n');
+
+    foreach (const line; range)
+    {
+        import lu.string : advancePast, stripped;
+        import std.typecons : Flag, No, Yes;
+
+        string slice = line.stripped;  // mutable
+        if ((slice.length == 0) || (slice[0] == '#')) continue;  // empty line or comment
+
+        // Advance past any mid-line comment octothorpes
+        const entry = slice.advancePast('#', Yes.inherit).stripped;
+        entries ~= entry;
+    }
+
+    return entries;
+}
+
+
+public:
+
+
+// handleGetopt
+/**
+    Parses command-line arguments and sets up the program.
+
+    Params:
+        args = Command-line arguments passed to the program.
+
+    Returns:
+        A Voldemort struct containing a [wg_monitor.context.Context][Context]
+        and an optional return value.
+
+    See_Also:
+        [parseGetopt]
+ */
+auto handleGetopt(const string[] args)
+{
+    import wg_monitor.common : ShellReturnValue;
+    import wg_monitor.cout;
+    import std.getopt : GetOptException;
+    import std.stdio : stdout, writefln, writeln;
+
+    /**
+        Voldemort.
+     */
+    static struct GetoptResults
+    {
+        /**
+            Context struct to populate with values from the passed arguments.
+         */
+        Context context;
+
+        /**
+            Return value to exit the program with, if it should exit.
+         */
+        ShellReturnValue retval;
+
+        /**
+            Whether the program should exit.
+         */
+        bool shouldExit;
+
+        /**
+            Whether the program should show the version string and exit.
+
+            The bool is inside [context], so wrap it.
+         */
+        auto shouldShowVersionAndExit() const
+        {
+            return context.shouldShowVersionAndExit;
+        }
+    }
+
+    scope(exit) stdout.flush();
+
+    GetoptResults results;
+
+    try
+    {
+        const getoptResults = parseGetopt(args, results.context);
+
+        if (results.context.shouldShowVersionAndExit)
+        {
+            results.retval = ShellReturnValue.success;
+            results.shouldExit = true;
+            return results;
+        }
+
+        if (getoptResults.helpWanted)
+        {
+            import wg_monitor.translation : allTranslationLanguageNames;
+            import std.getopt : Option;
+
+            /**
+                Prints the `--help` screen.
+             */
+            static void printGetoptHelpScreen(
+                const Option[] allOptions,
+                const string pattern = "%*s  %*s  %s")
+            {
+                size_t distanceShort;
+                size_t distanceLong;
+
+                /**
+                    Returns true if the passed flag should be omitted from the `--help` screen.
+                 */
+                static auto shouldSkipFlag(const Option opt)
+                {
+                    import std.algorithm.comparison : among;
+                    import std.algorithm.searching : endsWith;
+
+                    return
+                        (opt.optShort == "-h") ||
+                        opt.optLong.among!(
+                            "--reexec",
+                            "--version",
+                            "--cacert",
+                            "--both") ||
+                        opt.optLong.endsWith("-reminder") ||
+                        opt.optLong.endsWith("-reminders");
+                }
+
+                Option[] options;
+                options.reserve(allOptions.length);
+
+                /**
+                    Calculate the maximum format string distance for the short
+                    and long flags. This is used to align the flags in the output.
+
+                    Additionally populate the `options` array with the flags that
+                    should actually be printed.
+                 */
+                foreach (const opt; allOptions)
+                {
+                    import std.algorithm.comparison : max;
+
+                    if (shouldSkipFlag(opt)) continue;
+
+                    options ~= opt;
+                    distanceShort = max(distanceShort, opt.optShort.length);
+                    distanceLong = max(distanceLong, opt.optLong.length);
+                }
+
+                foreach (const opt; options)
+                {
+                    writefln(
+                        pattern,
+                        distanceShort,
+                        opt.optShort,
+                        distanceLong,
+                        opt.optLong,
+                        opt.help);
+                }
+            }
+
+            enum languagePattern = "Available languages: %-(%s, %)";
+
+            printProgramVersion();
+            writeln(' ');
+            printGetoptHelpScreen(getoptResults.options);
+            writeln(' ');
+            writefln(languagePattern, allTranslationLanguageNames);
+            results.retval = ShellReturnValue.success;
+            results.shouldExit = true;
+        }
+    }
+    catch (GetOptException e)
+    {
+        // Some other getopt error, such as an invalid flag passed
+        printProgramVersion();
+        writeln(' ');
+        printError(e.msg);
+        printGetoptInfo();
+        results.retval = ShellReturnValue.getoptFailure;
+        results.shouldExit = true;
+    }
+
+    return results;
 }
 
 
@@ -204,48 +408,6 @@ auto parsePeerFile(const string peerFile)
 auto parseBatsignFile(const string batsignFile)
 {
     return parseFileIntoStringArray(batsignFile);
-}
-
-
-// parseFileIntoStringArray
-/**
-    Helper function to parse a file into an array of strings.
-
-    Commented and empty lines are skipped. Mid-line comments are also cropped out.
-
-    Params:
-        filename = Path to the file to parse.
-
-    Returns:
-        An array of strings.
- */
-private auto parseFileIntoStringArray(const string filename)
-{
-    import std.algorithm.iteration : splitter;
-    import std.file : readText;
-    import std.string : chomp;
-
-    string[] entries;
-
-    auto range = filename
-        .readText()
-        .chomp()
-        .splitter('\n');
-
-    foreach (const line; range)
-    {
-        import lu.string : advancePast, stripped;
-        import std.typecons : Flag, No, Yes;
-
-        string slice = line.stripped;  // mutable
-        if ((slice.length == 0) || (slice[0] == '#')) continue;  // empty line or comment
-
-        // Advance past any mid-line comment octothorpes
-        const entry = slice.advancePast('#', Yes.inherit).stripped;
-        entries ~= entry;
-    }
-
-    return entries;
 }
 
 

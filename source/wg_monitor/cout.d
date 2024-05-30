@@ -109,3 +109,14 @@ void printIndented(Args...)(/*const*/ Args args)
     writeln("    ", args);
     stdout.flush();
 }
+
+
+// printGetoptInfo
+/**
+    Prints a message to the screen, indicating that more information can be found
+    by running the program with the `--help` flag.
+ */
+void printGetoptInfo()
+{
+    printInfo("see --help for more information");
+}

@@ -11,7 +11,6 @@ module wg_monitor.main;
 
 private:
 
-import wg_monitor.common : ShellReturnValue;
 import wg_monitor.context : Context;
 import wg_monitor.cout;
 
@@ -315,156 +314,6 @@ auto blockResolvingServerName(ref Context context)
     {
         // Let exceptions pass
     }*/
-}
-
-
-// applyGetopt
-/**
-    Parses command-line arguments and sets up the program.
-
-    Params:
-        args = Command-line arguments passed to the program.
-
-    Returns:
-        A Voldemort struct containing a [wg_monitor.context.Context][Context]
-        and an optional return value.
- */
-auto applyGetopt(const string[] args)
-{
-    import std.getopt : GetOptException;
-    import std.stdio : stdout, writefln, writeln;
-
-    /**
-        Voldemort.
-     */
-    static struct GetoptResults
-    {
-        /**
-            Context struct to populate with values from the passed arguments.
-         */
-        Context context;
-
-        /**
-            Return value to exit the program with, if it should exit.
-         */
-        ShellReturnValue retval;
-
-        /**
-            Whether the program should exit.
-         */
-        bool shouldExit;
-
-        /**
-            Whether the program should show the version string and exit.
-
-            The bool is inside [context], so wrap it.
-         */
-        auto shouldShowVersionAndExit() const
-        {
-            return context.shouldShowVersionAndExit;
-        }
-    }
-
-    scope(exit) stdout.flush();
-
-    GetoptResults results;
-
-    try
-    {
-        import wg_monitor.config : handleGetopt;
-
-        const getoptResults = handleGetopt(args, results.context);
-
-        if (getoptResults.helpWanted)
-        {
-            import wg_monitor.translation : allTranslationLanguageNames;
-            import std.getopt : Option;
-
-            /**
-                Prints the `--help` screen.
-             */
-            static void printGetoptHelpScreen(
-                const Option[] allOptions,
-                const string pattern = "%*s  %*s  %s")
-            {
-                size_t distanceShort;
-                size_t distanceLong;
-
-                /**
-                    Returns true if the passed flag should be omitted from the `--help` screen.
-                 */
-                static auto shouldSkipFlag(const Option opt)
-                {
-                    import std.algorithm.comparison : among;
-                    import std.algorithm.searching : endsWith;
-
-                    return
-                        (opt.optShort == "-h") ||
-                        opt.optLong.among!(
-                            "--reexec",
-                            "--version",
-                            "--cacert",
-                            "--both") ||
-                        opt.optLong.endsWith("-reminder") ||
-                        opt.optLong.endsWith("-reminders");
-                }
-
-                Option[] options;
-                options.reserve(allOptions.length);
-
-                /**
-                    Calculate the maximum format string distance for the short
-                    and long flags. This is used to align the flags in the output.
-
-                    Additionally populate the `options` array with the flags that
-                    should actually be printed.
-                 */
-                foreach (const opt; allOptions)
-                {
-                    import std.algorithm.comparison : max;
-
-                    if (shouldSkipFlag(opt)) continue;
-
-                    options ~= opt;
-                    distanceShort = max(distanceShort, opt.optShort.length);
-                    distanceLong = max(distanceLong, opt.optLong.length);
-                }
-
-                foreach (const opt; options)
-                {
-                    writefln(
-                        pattern,
-                        distanceShort,
-                        opt.optShort,
-                        distanceLong,
-                        opt.optLong,
-                        opt.help);
-                }
-            }
-
-            enum languagePattern = "Available languages: %-(%s, %)";
-
-            printProgramVersion();
-            writeln(' ');
-            printGetoptHelpScreen(getoptResults.options);
-            writeln(' ');
-            writefln(languagePattern, allTranslationLanguageNames);
-            results.retval = ShellReturnValue.success;
-            results.shouldExit = true;
-        }
-    }
-    catch (GetOptException e)
-    {
-        // Some other getopt error, such as an invalid flag passed
-        printProgramVersion();
-        writeln(' ');
-        printError(e.msg);
-        printGetoptInfo();
-        results.retval = ShellReturnValue.getoptFailure;
-        results.shouldExit = true;
-    }
-
-    return results;
 }
 
 
@@ -789,50 +638,39 @@ auto run(const string[] args, ref Context context)
 }
 
 
-// printGetoptInfo
-/**
-    Prints a message to the screen, indicating that more information can be found
-    by running the program with the `--help` flag.
- */
-void printGetoptInfo()
-{
-    printInfo("see --help for more information");
-}
-
-
 public:
 
 
 // tryRun
 /**
-    Calls [applyGetopt] and [run] in a try-catch, so exceptions thrown that were not
-    internally caught are still printed to the screen.
+    Calls [wg_monitor.config.handleGetopt] and [run] in a try-catch, so exceptions
+    thrown that were not internally caught are still printed to the screen.
 
     Params:
         args = Command-line arguments passed to the program.
 
     Returns:
         A [wg_monitor.common.ShellReturnValue|ShellReturnValue], indicating the
-        program's success or failure, as thrown by [applyGetopt] or [run].
+        program's success or failure, as thrown by
+        [wg_monitor.config.handleGetopt|handleGetopt] or [run].
  */
 auto tryRun(const string[] args)
 {
     try
     {
-        auto results = applyGetopt(args);
+        import wg_monitor.config : handleGetopt;
 
+        auto results = handleGetopt(args);
+
+        if (results.shouldShowVersionAndExit) printProgramVersion();
         if (results.shouldExit) return results.retval;
-
-        if (results.shouldShowVersionAndExit)
-        {
-            printProgramVersion();
-            return ShellReturnValue.success;
-        }
 
         return run(args, results.context);
     }
     catch (Exception e)
     {
+        import wg_monitor.common : ShellReturnValue;
+
         printError(e.msg);
         return ShellReturnValue.exception;
     }
