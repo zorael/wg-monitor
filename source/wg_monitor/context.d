@@ -208,7 +208,7 @@ public:
     /**
         Whether or not to show the version string and exit immediately.
      */
-    bool showVersionAndExit = false;
+    bool shouldShowVersionAndExit = false;
 
     /**
         Whether or not to use both Batsign *and* the external command for notifications.

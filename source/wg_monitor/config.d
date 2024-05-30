@@ -104,7 +104,7 @@ auto handleGetopt(const string[] args, out Context context)
             &context.dryRun,
         "version",
             string.init,
-            &context.showVersionAndExit);
+            &context.shouldShowVersionAndExit);
 
     if (peerTimeout >= 0) context.durations.peerTimeout = peerTimeout.seconds;
     if (sleepBetweenChecks > 0) context.durations.sleepBetweenChecks = sleepBetweenChecks.seconds;

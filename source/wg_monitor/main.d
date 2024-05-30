@@ -353,6 +353,16 @@ auto applyGetopt(const string[] args)
             Whether the program should exit.
          */
         bool shouldExit;
+
+        /**
+            Whether the program should show the version string and exit.
+
+            The bool is inside [context], so wrap it.
+         */
+        auto shouldShowVersionAndExit() const
+        {
+            return context.shouldShowVersionAndExit;
+        }
     }
 
     scope(exit) stdout.flush();
@@ -813,7 +823,7 @@ auto tryRun(const string[] args)
 
         if (results.shouldExit) return results.retval;
 
-        if (results.context.showVersionAndExit)
+        if (results.shouldShowVersionAndExit)
         {
             printProgramVersion();
             return ShellReturnValue.success;
