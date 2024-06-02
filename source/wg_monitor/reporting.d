@@ -80,6 +80,7 @@ auto sendBatsign(const Context context, const string body_)
         Walk through each Batsign URL and issue a POST request.
         Save failed attempts in `failures` to be returned.
      */
+    outer:
     foreach (const url; context.batsignURLs)
     {
         import requests : Request;
@@ -91,23 +92,44 @@ auto sendBatsign(const Context context, const string body_)
         req.addHeaders(headers);
         if (context.caBundleFile.length > 0) req.sslSetCaCert(context.caBundleFile);
 
-        try
-        {
-            auto res = req.post(url, body_);
+        enum numRetries = 3;
 
-            if ((res.code < 200) || (res.code >= 300))
+        //inner:
+        foreach (immutable i; 0..numRetries)
+        {
+            try
             {
-                import std.string : chomp;
+                auto res = req.post(url, body_);
 
-                // Unexpected response code
-                const responseBody = cast(string)res.responseBody;
-                failures ~= Failure(res.code, responseBody.chomp());
+                if ((res.code < 200) || (res.code >= 300))
+                {
+                    import std.string : chomp;
+
+                    // Unexpected response code
+                    const responseBody = cast(string)res.responseBody;
+                    failures ~= Failure(res.code, responseBody.chomp());
+                    continue outer;   // break inner
+                }
             }
-        }
-        catch (Exception e)
-        {
-            // Some other failure
-            failures ~= Failure(e.msg);
+            catch (Exception e)
+            {
+                // Some other failure
+                // Can't resolve name when connect to batsign.me:443: getaddrinfo error: Temporary failure in name resolution
+                if (i == numRetries-1)
+                {
+                    // Last retry
+                    failures ~= Failure(e.msg);
+                    continue outer;  // break inner
+                }
+                else
+                {
+                    import core.thread : Thread;
+                    import core.time : seconds;
+
+                    static immutable retryDelay = 5.seconds;
+                    Thread.sleep(retryDelay);
+                }
+            }
         }
     }
 
