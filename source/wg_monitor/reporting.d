@@ -481,6 +481,7 @@ auto report(
     {
         if (failure.exceptionText.length > 0)
         {
+            // Can't resolve name when connect to batsign.me:443: getaddrinfo error: Temporary failure in name resolution
             printError("notification post failed: ", failure.exceptionText);
             continue;
         }

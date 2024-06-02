@@ -105,6 +105,7 @@ auto parseGetopt(const string[] args, out Context context)
             &context.shouldShowVersionAndExit);
 
     if (peerTimeout >= 0) context.durations.peerTimeout = peerTimeout.seconds;
+
     if (sleepBetweenChecks > 0) context.durations.sleepBetweenChecks = sleepBetweenChecks.seconds;
 
     if (firstReminder > 0)
@@ -235,6 +236,7 @@ auto handleGetopt(const string[] args)
 
     scope(exit) stdout.flush();
 
+    /// Return value.
     GetoptResults results;
 
     try
@@ -303,6 +305,9 @@ auto handleGetopt(const string[] args)
                     distanceLong = max(distanceLong, opt.optLong.length);
                 }
 
+                /**
+                    Print the flags and their help strings.
+                 */
                 foreach (const opt; options)
                 {
                     writefln(
@@ -366,7 +371,9 @@ auto parsePeerFile(const string peerFile)
         string[] invalid;
     }
 
+    /// Return value.
     PeerFileHashes result;
+
     const peerLines = parseFileIntoStringArray(peerFile);
 
     /*

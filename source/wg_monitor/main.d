@@ -31,9 +31,7 @@ version(Windows)
 void mainLoop(/*const*/ Context context)
 {
     import wg_monitor.peer : Peer, SortedPeers;
-    import lu.string : plurality;
     import std.datetime.systime : Clock, SysTime;
-    import std.format : format;
     import std.stdio : stdout;
     import core.time : Duration;
 
@@ -42,6 +40,9 @@ void mainLoop(/*const*/ Context context)
      */
     void printPreamble()
     {
+        import lu.string : plurality;
+        import std.format : format;
+
         enum monitorMessagePattern = "monitoring %d %s, probing every %s.";
         const monitorMessage = monitorMessagePattern.format(
             context.peerList.length,

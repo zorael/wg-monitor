@@ -15,6 +15,9 @@ public:
 // Peer
 /**
     Embodies the notion of a Wireguard peer.
+
+    See_Also:
+        [SortedPeers]
  */
 struct Peer
 {
@@ -94,6 +97,9 @@ public:
 /**
     A struct containing the current state of the Wireguard peers, sorted by
     connection state.
+
+    See_Also:
+        [Peer]
  */
 struct SortedPeers
 {
