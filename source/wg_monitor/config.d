@@ -450,10 +450,10 @@ auto resolveFilename(
     const string defaultFilename)
 {
     import std.conv : text;
-    import std.file : exists;
+    import std.file : exists, isDir;
     import std.path : extension;
 
-    if (filename.exists) return true;
+    if (filename.exists && !filename.isDir) return true;  // No need to resolve
 
     const filenameExtension = defaultFilename.extension;  // cache it
 
@@ -482,9 +482,9 @@ auto resolveFilename(
 
     foreach (const thisFilename; allFilesInOrder[])
     {
-        if (thisFilename.exists)
+        if (thisFilename.exists && !thisFilename.isDir)
         {
-            // File found; return true
+            // File found
             filename = thisFilename;
             return true;
         }
