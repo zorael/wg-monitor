@@ -427,14 +427,14 @@ auto run(const string[] args, ref Context context)
 
         if (!languageFound)
         {
-            import wg_monitor.translation : allTranslationLanguageNames;
+            import wg_monitor.translation : allTranslations;
             import std.format : format;
 
             // It wasn't.
             enum notFoundPattern = "language '%s' not found";
             enum availablePattern = "available languages: %-(%s, %)";
             const notFoundMessage = notFoundPattern.format(context.language);
-            const availableMessage = availablePattern.format(allTranslationLanguageNames);
+            const availableMessage = availablePattern.format(allTranslations.languageNames);
             printError(notFoundMessage);
             printInfo(availableMessage);
             return ShellReturnValue.invalidLanguage;

@@ -109,7 +109,7 @@ struct Translation
      */
     auto inherit(const string language)
     {
-        foreach (const translation; .allTranslations)
+        foreach (const translation; .allTranslations.translations)
         {
             if (translation.language == language)
             {
@@ -127,9 +127,10 @@ struct Translation
 /**
     Translations statically imported from the `translations.txt` file.
 
+    Holds a value of a Voldemort struct, with `translations` and `languageNames` members.
+
     See_Also:
         [Translation]
-        [allTranslationLanguageNames]
         `translations.txt` in the project root.
  */
 static immutable allTranslations = ()
@@ -140,9 +141,31 @@ static immutable allTranslations = ()
     enum translationsOnFile = cast(string)import("translations.txt");
     enum languageSeparator = "\n\n";  // double-newlines separate languages
 
-    Translation[] translations;
+    /**
+        Voldemort.
+     */
+    static struct AllTranslations
+    {
+        /**
+            All translations in an array.
+         */
+        Translation[] translations;
+
+        /**
+            The string names of all translations, also in an array.
+         */
+        string[] languageNames;
+    }
+
+    /// Return value.
+    AllTranslations allTranslations;
+
     auto translationRange = translationsOnFile.splitter(languageSeparator);
 
+    /*
+        Iterate through all translations in the file, parsing lines into members
+        of a Translation struct.
+     */
     foreach (const translationEntry; translationRange)
     {
         auto lineRange = translationEntry.splitter('\n');
@@ -187,31 +210,13 @@ static immutable allTranslations = ()
             }
         }
 
-        if (translation.language.length > 0) translations ~= translation;
+        if (translation.language.length > 0)
+        {
+            // No language name was provided, so assume it's just empty space
+            allTranslations.translations ~= translation;
+            allTranslations.languageNames ~= translation.language;
+        }
     }
 
-    return translations;
-}();
-
-
-// allTranslationLanguageNames
-/**
-    Array of the names of all languages found in `translations.txt`.
-
-    See_Also:
-        [Translation]
-        [allTranslations]
-        `translations.txt` in the project root.
- */
-static immutable allTranslationLanguageNames =
-{
-    string[] languageNames;
-
-    foreach (const translation; .allTranslations)
-    {
-        if (translation.language == "debug") continue;  // omit debug language from list
-        languageNames ~= translation.language;
-    }
-
-    return languageNames;
+    return allTranslations;
 }();

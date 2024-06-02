@@ -252,7 +252,7 @@ auto handleGetopt(const string[] args)
 
         if (getoptResults.helpWanted)
         {
-            import wg_monitor.translation : allTranslationLanguageNames;
+            import wg_monitor.translation : allTranslations;
             import std.getopt : Option;
 
             /**
@@ -320,13 +320,14 @@ auto handleGetopt(const string[] args)
                 }
             }
 
-            enum languagePattern = "Available languages: %-(%s, %)";
-
             printProgramVersion();
             writeln(' ');
             printGetoptHelpScreen(getoptResults.options);
             writeln(' ');
-            writefln(languagePattern, allTranslationLanguageNames);
+
+            enum languagePattern = "Available languages: %-(%s, %)";
+            writefln(languagePattern, allTranslations.languageNames);
+
             results.retval = ShellReturnValue.success;
             results.shouldExit = true;
         }
