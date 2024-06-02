@@ -19,7 +19,8 @@ public:
 struct Context
 {
 private:
-    import wg_monitor.translation : Translation;
+    import wg_monitor.translation : Translation, allTranslations;
+    import std.algorithm.searching : canFind;
 
     /**
         Default language to use in notifications.
@@ -34,6 +35,19 @@ private:
             `translations.txt` in the project root.
      */
     enum defaultLanguage = "english";
+
+    /**
+        Statically ensure that the default language is valid, because we can.
+        Also, everything breaks if it isn't.
+     */
+    static if (!allTranslations.languageNames.canFind(defaultLanguage))
+    {
+        import std.format : format;
+
+        enum pattern = "Invalid default translation language: `%s` (available are: %-(`%s`, %)`)";
+        enum message = pattern.format(defaultLanguage, allTranslations.languageNames);
+        static assert(0, message);
+    }
 
 public:
     /**
