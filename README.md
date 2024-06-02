@@ -57,6 +57,8 @@ $ sudo wg show [interface] peers > peers.list
 
 The `batsign.url` file should contain one or more [**Batsign**](https://batsign.me) URLs. Batsign is a free (gratis) service with which you can send brief emails to yourself by issuing simple HTTP requests. Requires registration.
 
+It is recommended that you make an entry in `/etc/hosts` to point `batsign.me` to the IP address of the Batsign server, to avoid potential DNS lookup failures.
+
 ### notification commands
 
 An external command can be supplied to be run instead of sending a batsign when a peer is lost. It will be invoked with the body of the notification as its first argument, the number of iterations the main loop has run (starting from 0) as its second, and then four strings of space-separated peer hashes as arguments 3-6.
