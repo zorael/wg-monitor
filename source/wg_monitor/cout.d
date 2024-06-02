@@ -9,6 +9,25 @@
  */
 module wg_monitor.cout;
 
+private:
+
+
+// printImpl
+/**
+    Internal function for printing messages to the terminal.
+
+    Params:
+        sign = The character to prefix the message with (inside brackets).
+        args = The variadic arguments to print.
+ */
+void printImpl(Args...)(const char sign, /*const*/ Args args)
+{
+    import std.stdio : stdout, writeln;
+    writeln('[', sign, "] ", args);
+    stdout.flush();
+}
+
+
 public:
 
 
@@ -29,22 +48,6 @@ void printProgramVersion() @safe
 
     writefln("wireguard monitor v%d.%d.%d%s | copyright 2024 jr", v.major, v.minor, v.patch, pre);
     writeln("$ git clone " ~ sourceURL ~ ".git");
-}
-
-
-// printImpl
-/**
-    Internal function for printing messages to the terminal.
-
-    Params:
-        sign = The character to prefix the message with (inside brackets).
-        args = The variadic arguments to print.
- */
-void printImpl(Args...)(const char sign, /*const*/ Args args)
-{
-    import std.stdio : stdout, writeln;
-    writeln('[', sign, "] ", args);
-    stdout.flush();
 }
 
 
