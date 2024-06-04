@@ -80,10 +80,12 @@ auto sendBatsign(const Context context, const string body_)
         Walk through each Batsign URL and issue a POST request.
         Save failed attempts in `failures` to be returned.
      */
-    outer:
+    //outer:
     foreach (const url; context.batsignURLs)
     {
         import requests : Request;
+        import core.thread : Thread;
+        import core.time : seconds;
 
         auto req = Request();
         //req.verbosity = 1;
@@ -92,10 +94,11 @@ auto sendBatsign(const Context context, const string body_)
         req.addHeaders(headers);
         if (context.caBundleFile.length > 0) req.sslSetCaCert(context.caBundleFile);
 
-        enum numRetries = 3;
+        enum numRetries = 10;
+        static immutable retryDelay = 5.seconds;
 
-        //inner:
-        foreach (immutable i; 0..numRetries)
+        inner:
+        foreach (immutable retry; 0..numRetries)
         {
             try
             {
@@ -108,26 +111,38 @@ auto sendBatsign(const Context context, const string body_)
                     // Unexpected response code
                     const responseBody = cast(string)res.responseBody;
                     failures ~= Failure(res.code, responseBody.chomp());
-                    continue outer;   // break inner
+
+                    // Alternatively, if we want to retry:
+                    /*if (retry == numRetries-1)
+                    {
+                        import std.string : chomp;
+                        const responseBody = cast(string)res.responseBody;
+                        failures ~= Failure(res.code, responseBody.chomp());
+                    }
+                    else
+                    {
+                        Thread.sleep(retryDelay);
+                        continue inner;
+                    }*/
                 }
+
+                break inner;  //continue outer;
             }
             catch (Exception e)
             {
-                // Some other failure
                 // Can't resolve name when connect to batsign.me:443: getaddrinfo error: Temporary failure in name resolution
-                if (i == numRetries-1)
+                // Can't connect to batsign.me:443
+
+                if (retry == numRetries-1)
                 {
                     // Last retry
                     failures ~= Failure(e.msg);
-                    continue outer;  // break inner
+                    break inner;  // continue outer;
                 }
                 else
                 {
-                    import core.thread : Thread;
-                    import core.time : seconds;
-
-                    static immutable retryDelay = 5.seconds;
                     Thread.sleep(retryDelay);
+                    //continue inner;
                 }
             }
         }
