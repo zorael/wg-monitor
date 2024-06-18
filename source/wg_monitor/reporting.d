@@ -27,7 +27,7 @@ import wg_monitor.peer : SortedPeers;
         body_ = The body of the notification.
 
     Returns:
-        An array of Voldemort structs representing any failures.
+        An array of Voldemort structs representing attempt results.
 
     See_Also:
         https://batsign.me
@@ -45,7 +45,7 @@ auto sendBatsign(const Context context, const string body_)
     /**
         Voldemort.
      */
-    static struct Failure
+    static struct Result
     {
         /**
             HTTP response code.
@@ -62,19 +62,37 @@ auto sendBatsign(const Context context, const string body_)
          */
         string exceptionText;
 
-        this(int code, string responseBody)
+        /**
+            Whether the request was successful.
+         */
+        bool success;
+
+        /**
+            URL used in the request.
+         */
+        string url;
+
+        this(const int code, const string url)
         {
             this.code = code;
-            this.responseBody = responseBody;
+            this.url = url;
+            this.success = (code >= 200) && (code < 300);
         }
 
-        this(string exceptionText)
+        this(const int code, const string url, const string responseBody)
+        {
+            this.responseBody = responseBody;
+            this(code, url);
+        }
+
+        this(/*const int code,*/ const string url, const string exceptionText)
         {
             this.exceptionText = exceptionText;
+            this.url = url;
         }
     }
 
-    Failure[] failures;
+    Result[][] urlResults;
 
     /*
         Walk through each Batsign URL and issue a POST request.
@@ -97,6 +115,8 @@ auto sendBatsign(const Context context, const string body_)
         enum numRetries = 10;
         static immutable retryDelay = 5.seconds;
 
+        Result[] results;
+
         inner:
         foreach (immutable retry; 0..numRetries)
         {
@@ -110,20 +130,30 @@ auto sendBatsign(const Context context, const string body_)
 
                     // Unexpected response code
                     const responseBody = cast(string)res.responseBody;
-                    failures ~= Failure(res.code, responseBody.chomp());
+                    results ~= Result(res.code, url, responseBody.chomp());
+
+                    if (res.code == 404)
+                    {
+                        // 404 Not Found
+                        break inner;  // continue outer;
+                    }
 
                     // Alternatively, if we want to retry:
                     /*if (retry == numRetries-1)
                     {
                         import std.string : chomp;
                         const responseBody = cast(string)res.responseBody;
-                        failures ~= Failure(res.code, responseBody.chomp());
+                        results ~= Result(res.code, url, responseBody.chomp());
                     }
                     else
                     {
                         Thread.sleep(retryDelay);
                         continue inner;
                     }*/
+                }
+                else
+                {
+                    results ~= Result(res.code, url);
                 }
 
                 break inner;  //continue outer;
@@ -132,11 +162,11 @@ auto sendBatsign(const Context context, const string body_)
             {
                 // Can't resolve name when connect to batsign.me:443: getaddrinfo error: Temporary failure in name resolution
                 // Can't connect to batsign.me:443
+                results ~= Result(e.msg, url);
 
                 if (retry == numRetries-1)
                 {
                     // Last retry
-                    failures ~= Failure(e.msg);
                     break inner;  // continue outer;
                 }
                 else
@@ -146,9 +176,11 @@ auto sendBatsign(const Context context, const string body_)
                 }
             }
         }
+
+        urlResults ~= results;
     }
 
-    return failures;
+    return urlResults;
 }
 
 
@@ -503,38 +535,56 @@ auto report(
 
     const subject = context.translation.subject.replace("$serverName", context.serverName);
     const subjectedBody = "Subject: " ~ subject ~ '\n' ~ body_;
-    const batsignFailures = sendBatsign(context, subjectedBody);
+    const batsignResults = sendBatsign(context, subjectedBody);
+    bool batsignSuccess = true;  // start out as true
 
-    if (batsignFailures.length == 0)
+    /*
+        Walk through the results of the Batsign notifications and print them.
+
+        Set batsignSuccess to false on errors, otherwise continue the loop and
+        leave it as true.
+     */
+    outer:
+    foreach (const urlResults; batsignResults)
     {
-        printInfo("notification post successful");
-        return (context.command.length > 0) ?
-            commandSuccess :  // bothNotificationMethods is set
-            true;
+        foreach (const result; urlResults)
+        {
+            if (result.success)
+            {
+                printInfo("notification post successful (", result.url, ')');
+                //batsignSuccess &= true;  // mark success (no need)
+                continue outer;  // continue next url
+            }
+            else if (result.exceptionText.length > 0)
+            {
+                // Can't resolve name when connect to batsign.me:443: getaddrinfo error: Temporary failure in name resolution
+                printError("notification post failed with exception: ", result.exceptionText, " (", result.url, ')');
+                batsignSuccess = false;  // mark failure
+                continue outer;  // continue next url
+            }
+            else
+            {
+                printError("notification post received status ", result.code, " (", result.url, ')');
+
+                if (result.code == 404)
+                {
+                    printQuery("is the URL correct?");
+                    batsignSuccess = false;  // mark failure
+                    continue outer;  // next url
+                }
+                else if (result.responseBody.length > 0)
+                {
+                    writeln(result.responseBody);
+                    stdout.flush();
+                }
+            }
+        }
+
+        // If we're here, we repeatedly failed and never continued
+        batsignSuccess = false;
     }
 
-    // Handle any failures
-    foreach (const failure; batsignFailures)
-    {
-        if (failure.exceptionText.length > 0)
-        {
-            // Can't resolve name when connect to batsign.me:443: getaddrinfo error: Temporary failure in name resolution
-            printError("notification post failed: ", failure.exceptionText);
-            continue;
-        }
-
-        printError("notification post returned status ", failure.code);
-
-        if (failure.code == 404)
-        {
-            printQuery("is the URL correct?");
-        }
-        else if (failure.responseBody.length > 0)
-        {
-            writeln(failure.responseBody);
-            stdout.flush();
-        }
-    }
-
-    return false;
+    return (context.command.length > 0) ?
+        (batsignSuccess && commandSuccess) :  // bothNotificationMethods is set or we wouldn't be here
+        batsignSuccess;
 }
