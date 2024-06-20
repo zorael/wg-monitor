@@ -547,40 +547,45 @@ auto report(
     outer:
     foreach (const urlResults; batsignResults)
     {
+        if (urlResults.length == 0) continue outer;
+
+        printInfo("sending notification to ", urlResults[0].url);
+
+        inner:
         foreach (const result; urlResults)
         {
             if (result.success)
             {
-                printInfo("notification post successful (", result.url, ')');
+                printInfo("post success");
                 //batsignSuccess &= true;  // mark success (no need)
-                continue outer;  // continue next url
+                continue outer;  // next url
             }
             else if (result.exceptionText.length > 0)
             {
                 // Can't resolve name when connect to batsign.me:443: getaddrinfo error: Temporary failure in name resolution
-                printError("notification post failed with exception: ", result.exceptionText, " (", result.url, ')');
-                batsignSuccess = false;  // mark failure
-                continue outer;  // continue next url
+                printError("post failed with exception: ", result.exceptionText);
+                continue inner;  // retry
             }
             else
             {
-                printError("notification post received status ", result.code, " (", result.url, ')');
+                printError("post received status ", result.code);
 
                 if (result.code == 404)
                 {
                     printQuery("is the URL correct?");
-                    batsignSuccess = false;  // mark failure
-                    continue outer;  // next url
+                    break inner;  // drop down and mark failure
                 }
                 else if (result.responseBody.length > 0)
                 {
                     writeln(result.responseBody);
                     stdout.flush();
                 }
+
+                continue inner;  // retry
             }
         }
 
-        // If we're here, we repeatedly failed and never continued
+        // If we're here, we failed
         batsignSuccess = false;
     }
 
