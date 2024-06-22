@@ -454,6 +454,7 @@ auto report(
     import wg_monitor.cout;
     import wg_monitor.peer : Peer;
     import std.array : join, replace;
+    import std.conv : text;
     import std.stdio : stdout, writeln;
 
     /**
@@ -534,7 +535,7 @@ auto report(
     }
 
     const subject = context.translation.subject.replace("$serverName", context.serverName);
-    const subjectedBody = "Subject: " ~ subject ~ '\n' ~ body_;
+    const subjectedBody = text("Subject: ", subject, '\n', body_);
     const batsignResults = sendBatsign(context, subjectedBody);
     bool batsignSuccess = true;  // start out as true
 
