@@ -488,14 +488,9 @@ auto run(const string[] args, ref Context context)
             printError(context.peerFile, " is empty. add peer hashes to it.");
         }
 
-        if (context.command.length > 0)
+        if ((context.command.length == 0) || context.bothNotificationMethods)
         {
-            // An external command was provided
-            // No need to parse batsign file
-        }
-        else /*if (context.batsignFile.length > 0)*/
-        {
-            // No external command; parse batsign file
+            // Parse batsign file
             context.batsignURLs = parseBatsignFile(context.batsignFile);
 
             if (context.batsignURLs.length == 0)
@@ -506,9 +501,16 @@ auto run(const string[] args, ref Context context)
         }
 
         // As above, exit here to allow for both messages to be displayed
-        if ((context.peerList.length == 0) ||
-            ((context.batsignURLs.length == 0) && !commandExists))
+        if (context.peerList.length == 0)
         {
+            // No sense doing anything without any peers
+            return ShellReturnValue.emptyFiles;
+        }
+        else if (
+            (context.batsignURLs.length == 0) &&
+            (context.command.length == 0))
+        {
+            // Likewise no sense doing anything without any notification methods
             return ShellReturnValue.emptyFiles;
         }
 
@@ -535,7 +537,8 @@ auto run(const string[] args, ref Context context)
             {
                 writefln(pattern, -width, "command:", context.command);
             }
-            else /*if (context.command.length == 0)*/
+
+            if ((context.command.length == 0) || context.bothNotificationMethods)
             {
                 import lu.string : plurality;
 
