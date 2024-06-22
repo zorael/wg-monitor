@@ -27,7 +27,7 @@ import wg_monitor.peer : SortedPeers;
         body_ = The body of the notification.
 
     Returns:
-        An array of Voldemort structs representing attempt results.
+        `true` if all notifications were sent successfully; `false` if not.
 
     See_Also:
         https://batsign.me
@@ -35,75 +35,30 @@ import wg_monitor.peer : SortedPeers;
 auto sendBatsign(const Context context, const string body_)
 {
     import lu.conv : toAlpha;
-    import core.time : seconds;
-
-    static immutable postTimeout = 10.seconds;  // hardcoded
 
     static string[string] headers;
     headers["Content-Length"] = body_.length.toAlpha();
 
     /**
-        Voldemort.
+        Whether batsigns could be sent to each URL.
+        Must begin as true.
      */
-    static struct Result
-    {
-        /**
-            HTTP response code.
-         */
-        int code;
-
-        /**
-            HTTP response body.
-         */
-        string responseBody;
-
-        /**
-            Message of thrown exception.
-         */
-        string exceptionText;
-
-        /**
-            Whether the request was successful.
-         */
-        bool success;
-
-        /**
-            URL used in the request.
-         */
-        string url;
-
-        this(const int code, const string url)
-        {
-            this.code = code;
-            this.url = url;
-            this.success = (code >= 200) && (code < 300);
-        }
-
-        this(const int code, const string url, const string responseBody)
-        {
-            this.responseBody = responseBody;
-            this(code, url);
-        }
-
-        this(/*const int code,*/ const string url, const string exceptionText)
-        {
-            this.exceptionText = exceptionText;
-            this.url = url;
-        }
-    }
-
-    Result[][] urlResults;
+    bool success = true;
 
     /*
         Walk through each Batsign URL and issue a POST request.
         Save failed attempts in `failures` to be returned.
      */
-    //outer:
+    nextURL:
     foreach (const url; context.batsignURLs)
     {
+        import wg_monitor.cout;
         import requests : Request;
-        import core.thread : Thread;
         import core.time : seconds;
+
+        static immutable postTimeout = 10.seconds;  // hardcoded
+
+        printInfo("sending notification to ", url);
 
         auto req = Request();
         //req.verbosity = 1;
@@ -113,74 +68,69 @@ auto sendBatsign(const Context context, const string body_)
         if (context.caBundleFile.length > 0) req.sslSetCaCert(context.caBundleFile);
 
         enum numRetries = 10;
-        static immutable retryDelay = 5.seconds;
 
-        Result[] results;
-
-        inner:
         foreach (immutable retry; 0..numRetries)
         {
             try
             {
                 auto res = req.post(url, body_);
 
-                if ((res.code < 200) || (res.code >= 300))
+                if ((res.code >= 200) && (res.code < 300))
                 {
-                    import std.string : chomp;
-
+                    printInfo("post success");
+                    //success &= true;  // mark success (no need)
+                    continue nextURL;
+                }
+                else /*if ((res.code < 200) || (res.code >= 300))*/
+                {
                     // Unexpected response code
-                    const responseBody = cast(string)res.responseBody;
-                    results ~= Result(res.code, url, responseBody.chomp());
+                    printError("post received status ", res.code);
 
                     if (res.code == 404)
                     {
                         // 404 Not Found
-                        break inner;  // continue outer;
-                    }
-
-                    // Alternatively, if we want to retry:
-                    /*if (retry == numRetries-1)
-                    {
-                        import std.string : chomp;
-                        const responseBody = cast(string)res.responseBody;
-                        results ~= Result(res.code, url, responseBody.chomp());
+                        printQuery("is the URL correct?");
+                        continue nextURL;
                     }
                     else
                     {
-                        Thread.sleep(retryDelay);
-                        continue inner;
-                    }*/
-                }
-                else
-                {
-                    results ~= Result(res.code, url);
+                        import std.stdio : stdout, writeln;
+                        import std.string : chomp;
+
+                        const responseBody = cast(string)res.responseBody;
+                        writeln(responseBody.chomp());
+                        stdout.flush();
+                    }
                 }
 
-                break inner;  //continue outer;
+                // Drop down to delay
             }
             catch (Exception e)
             {
                 // Can't resolve name when connect to batsign.me:443: getaddrinfo error: Temporary failure in name resolution
                 // Can't connect to batsign.me:443
-                results ~= Result(e.msg, url);
+                printError("post failed with exception: ", e.msg);
+            }
 
-                if (retry == numRetries-1)
-                {
-                    // Last retry
-                    break inner;  // continue outer;
-                }
-                else
-                {
-                    Thread.sleep(retryDelay);
-                    //continue inner;
-                }
+            // Delay before retry unless we're on the last attempt
+            if (retry < numRetries-1)
+            {
+                import core.thread : Thread;
+                static immutable retryDelay = 5.seconds;
+                Thread.sleep(retryDelay);
+            }
+            else
+            {
+                // Last retry
+                // Successful cases will have already continued the loop
+                // ergo, this is a failure
+                printError("notification failed after ", numRetries, " attepmts");
+                success = false;
             }
         }
-
-        urlResults ~= results;
     }
 
-    return urlResults;
+    return success;
 }
 
 
@@ -208,7 +158,7 @@ auto sendBatsign(const Context context, const string body_)
         sortedPeers = The current state of the Wireguard peers, sorted by connection state.
 
     Returns:
-        The Voldemort returned by [std.process.execute].
+        `true` if the command executed successfully; `false` if not.
  */
 auto runCommand(
     const string executable,
@@ -216,6 +166,7 @@ auto runCommand(
     const size_t loopIteration,
     const SortedPeers sortedPeers)
 {
+    import wg_monitor.cout;
     import wg_monitor.peer : Peer;
     import std.conv : to;
     import std.process : execute;
@@ -246,7 +197,26 @@ auto runCommand(
         concatenate(sortedPeers.present),
     ];
 
-    return execute(command[]);
+    const result = execute(command[]);
+    const success = (result.status == 0);
+
+    if (success)
+    {
+        printInfo("notification command successful");
+        //writeln(result.output.chomp());
+        //stdout.flush();
+    }
+    else /*if (!success)*/
+    {
+        import std.stdio : stdout, writeln;
+        import std.string : chomp;
+
+        printError("notification command failed with status ", result.status);
+        writeln(result.output.chomp());
+        stdout.flush();
+    }
+
+    return success;
 }
 
 
@@ -445,6 +415,9 @@ public:
         context = The context struct.
         sortedPeers = The current state of the Wireguard peers, sorted by connection state.
         loopIteration = The current loop iteration (counter).
+
+    Returns:
+        `true` if all notifications were sent successfully; `false` if not.
  */
 auto report(
     const Context context,
@@ -512,83 +485,13 @@ auto report(
 
     if (context.command.length > 0)
     {
-        const result = runCommand(context.command, body_, loopIteration, sortedPeers);
-        commandSuccess = (result.status == 0);
-
-        if (commandSuccess)
-        {
-            printInfo("notification command successful");
-            //writeln(result.output.chomp());
-            //stdout.flush();
-        }
-        else /*if (!success)*/
-        {
-            import std.string : chomp;
-            printError("notification command failed with status ", result.status);
-            writeln(result.output.chomp());
-            stdout.flush();
-        }
-
-        // If bothNotificationMethods is set, continue to send a batsign too.
-        // Conversely, if it is not set, return here
+        commandSuccess = runCommand(context.command, body_, loopIteration, sortedPeers);
         if (!context.bothNotificationMethods) return commandSuccess;
     }
 
     const subject = context.translation.subject.replace("$serverName", context.serverName);
     const subjectedBody = text("Subject: ", subject, '\n', body_);
-    const batsignResults = sendBatsign(context, subjectedBody);
-    bool batsignSuccess = true;  // start out as true
-
-    /*
-        Walk through the results of the Batsign notifications and print them.
-
-        Set batsignSuccess to false on errors, otherwise continue the loop and
-        leave it as true.
-     */
-    outer:
-    foreach (const urlResults; batsignResults)
-    {
-        if (urlResults.length == 0) continue outer;
-
-        printInfo("sending notification to ", urlResults[0].url);
-
-        inner:
-        foreach (const result; urlResults)
-        {
-            if (result.success)
-            {
-                printInfo("post success");
-                //batsignSuccess &= true;  // mark success (no need)
-                continue outer;  // next url
-            }
-            else if (result.exceptionText.length > 0)
-            {
-                // Can't resolve name when connect to batsign.me:443: getaddrinfo error: Temporary failure in name resolution
-                printError("post failed with exception: ", result.exceptionText);
-                continue inner;  // retry
-            }
-            else
-            {
-                printError("post received status ", result.code);
-
-                if (result.code == 404)
-                {
-                    printQuery("is the URL correct?");
-                    break inner;  // drop down and mark failure
-                }
-                else if (result.responseBody.length > 0)
-                {
-                    writeln(result.responseBody);
-                    stdout.flush();
-                }
-
-                continue inner;  // retry
-            }
-        }
-
-        // If we're here, we failed
-        batsignSuccess = false;
-    }
+    const batsignSuccess = sendBatsign(context, subjectedBody);
 
     return (context.command.length > 0) ?
         (batsignSuccess && commandSuccess) :  // bothNotificationMethods is set or we wouldn't be here
