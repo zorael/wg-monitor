@@ -378,6 +378,7 @@ auto run(const string[] args, ref Context context)
 
         if (context.command.length > 0)
         {
+            import std.algorithm.searching : startsWith;
             import std.path : isAbsolute;
 
             // An external command was supplied, which overrides the batsign file
@@ -393,7 +394,7 @@ auto run(const string[] args, ref Context context)
                 return ShellReturnValue.commandNotFound;
             }
 
-            if (!context.command.isAbsolute)
+            if (!context.command.isAbsolute && !context.command.startsWith("./"))
             {
                 // Workaround to support being passed --command=script.sh
                 context.command = "./" ~ context.command;
